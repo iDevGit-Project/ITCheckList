@@ -1,0 +1,38 @@
+@font-face {
+    font-family: 'IRANYekan';
+    src: url('/fonts/IRANYekanXFaNum-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'IRANYekan';
+    src: url('/fonts/IRANYekanXFaNum-Bold.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+}
+html {
+    font-size: 14px;
+    font-family: 'IRANYekan';
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+        font-family: 'IRANYekan';
+    }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+    margin-bottom: 60px;
+    font-family: 'IRANYekan';
+}
