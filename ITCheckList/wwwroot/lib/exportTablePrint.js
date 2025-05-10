@@ -45,7 +45,6 @@
         th, td {
             border: 1px solid black;
             padding: 8px;
-            text-align: center;
         }
         th {
             background-color: #f8f9fa;
