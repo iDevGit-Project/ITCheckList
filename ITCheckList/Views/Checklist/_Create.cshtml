@@ -3,20 +3,26 @@
 <!-- فرم افزودن موضوع جدید -->
 <form id="addChecklistForm">
     <div class="form-group">
-        <label for="section">بخش</label>
+        <label for="section">نام بخش</label>
         <input type="text" name="Section" class="form-control" id="section" required />
+        <span asp-validation-for="Section" class="badge badge-light-danger fs-7 fw-bold"></span>
     </div>
     <div class="form-group">
         <label for="description">توضیحات</label>
         <input type="text" name="Description" class="form-control" id="description" required />
+        <span asp-validation-for="Description" class="badge badge-light-danger fs-7 fw-bold"></span>
     </div>
     <div class="form-check">
         <input type="checkbox" name="Status" class="form-check-input" id="status" />
-        <label class="form-check-label" for="status">تأیید شده</label>
+        <label class="form-check-label" for="status">آیا سرویس بررسی شده است؟</label>
     </div>
     <div class="form-group">
-        <label for="note">یادداشت</label>
+        <label for="note">ثبت یادداشت</label>
         <input type="text" name="Note" class="form-control" id="note" />
     </div>
     <button type="submit" class="btn btn-success">ثبت اطلاعات</button>
 </form>
+@section ValidationAddCheckListForm {
+        // بررسی کردن مقادیر درون ورودی ها
+    <partial name="_ValidationScriptsPartial" />
+}

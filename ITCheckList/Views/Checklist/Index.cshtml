@@ -5,20 +5,20 @@
 <div class="mt-5" id="reportSection" dir="rtl">
     <h2 class="text-center">لیست بررسی‌های روزانه دپارتمان IT</h2>
     <!-- دکمه‌ای برای باز کردن مودال -->
-    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addChecklistModal">
+    <button id="btnAdd" type="button" class="btn btn-primary">
         افزودن موضوع جدید
     </button>
     <p>تاریخ امروز: <span class="fw-bold" id="shamsiDate"></span></p>
 
-    <table class="table table-bordered table-striped" id="reportTable">
+    <table class="table table-bordered" id="reportTable">
         <thead class="text-center">
             <tr>
                 <th>ردیف</th>
                 <th>بخش</th>
                 <th>موضوع</th>
                 <th>تاریخ</th>
-                <th>وضعیت</th>
                 <th>توضیحات</th>
+                <th>وضعیت</th>
                 <th>عملیات</th>
             </tr>
         </thead>
@@ -33,12 +33,12 @@
                         <td class="text-right">@item.Section</td>
                         <td class="text-right">@item.Description</td>
                         <td class="text-center">@item.CreatedAt.ToString("yyyy/MM/dd")</td>
+                        <td class="text-right">@item.Note</td>
                         <td class="text-center">
                             <span class="@(item.Status ? "status-done" : "status-pending")">
-                                @(item.Status ? "انجام شد." : "در حال بررسی.")
+                                @(item.Status ? "انجام شد." : "در دست اقدام.")
                             </span>
                         </td>
-                        <td class="text-right">@item.Note</td>
                         <td class="text-center">
                             <button class="btn btn-sm btn-warning btn-edit" data-id="@item.Id">ویرایش</button>
                             <button class="btn btn-sm btn-danger btn-delete" data-id="@item.Id">حذف</button>
@@ -70,66 +70,33 @@
 </div>
 <!--=================================================================-->
 <!--نمایش مودال جهت ثبت اطلاعات-->
-<!-- Modal برای فرم افزودن بررسی -->
-<div class="modal fade" id="AddmodalForm" tabindex="-1" aria-labelledby="AddmodalFormLabel" aria-hidden="true">
+<!-- Modal -->
+<div class="modal fade" id="modalForm" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="modalFormLabel">افزودن بررسی جدید</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title" id="modalLabel">ثبت بررسی جدید</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body" id="AddmodalForm" dir="rtl">
-                <!-- فرم از طریق Ajax بارگذاری می‌شود -->
+            <div class="modal-body" id="modalBody" dir="rtl">
+                <!-- فرم در اینجا بارگذاری می‌شود -->
             </div>
         </div>
     </div>
 </div>
 <!--=================================================================-->
-
 @section ITCheckListPrint {
     <!--فراخوانی فایل اسکریپت آنلاین -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/print-js/1.6.0/print.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="~/lib/exportTablePrint.js"></script>
     <!--=================================================================-->
-    <!--کد های اسکریپت خروجی گزارش از اطلاعات-->
+    <!--فراخوانی اسکریپت خروجی گزارش از اطلاعات-->
+    <script src="~/lib/exporttableprint.js"></script>
+    <!--=================================================================-->
+    <!--تبدیل تاریخ میلادی به شمسی-->
     <script>
-        function printFullTable() {
-                const table = document.getElementById("reportTable");
-            if (!table) {
-                alert("جدول پیدا نشد.");
-                return;
-            }
-            const printStyle = `
-                table {
-                    width: 100%;
-                    border-collapse: collapse;
-                    direction: rtl;
-                    font-family: 'IRANYekan', sans-serif;
-                    font-size: 13px;
-                }
-                th, td {
-                    border: 1px solid #000;
-                    padding: 8px;
-                    text-align: center;
-                }
-                th {
-                    background-color: #eaeaea;
-                    font-weight: bold;
-                }
-            `;
-            printJS({
-                printable: table.outerHTML,
-                type: 'raw-html',
-                style: printStyle
-            });
-        }
-    </script>
-    <!--استایل های مربوط به جدول-->
-    <script>
-        // تبدیل تاریخ میلادی به شمسی
         function toShamsi(gDate) {
             const g_y = gDate.getFullYear();
             const g_m = gDate.getMonth() + 1;
@@ -180,7 +147,6 @@
                 day: jd.toString().padStart(2, '0')
             };
         }
-
         // روزهای هفته به فارسی
         const weekDays = [
             "یک‌شنبه",
@@ -191,7 +157,6 @@
             "جمعه",
             "شنبه"
         ];
-
         // درج تاریخ در span
         document.addEventListener("DOMContentLoaded", function () {
             const today = new Date();
@@ -206,10 +171,13 @@
     <style>
         .status-done {
             color: #44CA92;
+            /* background-color: #f0fff9; */
             font-weight: bold;
         }
+
         .status-pending {
             color: #D80016;
+            /* background-color: #ffe9eb; */
             font-weight: bold;
         }
     </style>
@@ -217,29 +185,28 @@
     <!--ثبت آیتم با نمایش SweetAlert-->
     <script>
         $(document).ready(function () {
-            // باز کردن فرم Modal
-            $("#addChecklistModal").click(function () {
-                $.get("/Checklist/Create", function (data) {
-                    // بارگذاری محتوای فرم در modalBody
-                    $("#modalBody").html(data);
-                    // نمایش Modal
-                    $("#AddmodalForm").modal("show");
+            $('#btnAdd').click(function () {
+                $.get('/Checklist/Create', function (data) {
+                    $('#modalBody').html(data);
+                    $('#modalForm').modal('show');
                 });
             });
 
-            // ارسال فرم با استفاده از Ajax
-            $(document).on("submit", "#checklistForm", function (e) {
+            $(document).on('submit', '#addChecklistForm', function (e) {
                 e.preventDefault();
-                var formData = $(this).serialize();
-
-                $.post("/Checklist/Create", formData, function (result) {
-                    if (result.success) {
-                        $("#modalForm").modal("hide");
-                        Swal.fire("موفق!", result.message, "success").then(() => {
-                            location.reload(); // ریفرش صفحه پس از ثبت موفقیت‌آمیز
-                        });
-                    } else {
-                        Swal.fire("خطا", result.message, "error");
+                $.ajax({
+                    url: '/Checklist/Create',
+                    type: 'POST',
+                    data: $(this).serialize(),
+                    success: function (result) {
+                        if (result.success) {
+                            $('#modalForm').modal('hide');
+                            Swal.fire("موفق!", result.message, "success").then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire("خطا", result.message, "error");
+                        }
                     }
                 });
             });
@@ -248,6 +215,7 @@
     <!--=================================================================-->
     <!--ویرایش آیتم با تأیید SweetAlert-->
     <script>
+
         $(document).ready(function () {
             // نمایش فرم ویرایش
             $(document).on("click", ".btn-edit", function () {
