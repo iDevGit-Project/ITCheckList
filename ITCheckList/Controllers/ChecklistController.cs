@@ -1,6 +1,7 @@
 ﻿using ITCheckList.Models;
 using ITCheckList.Models.Context;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace ITCheckList.Controllers
 {
@@ -39,43 +40,58 @@ namespace ITCheckList.Controllers
             return Json(new { success = false, message = string.Join(" - ", errors) });
         }
 
-        // GET - بارگذاری فرم ویرایش در Modal
-        [HttpGet]
-        public IActionResult Edit(int id)
+        // GET: Checklist/Edit/5
+        public async Task<IActionResult> Edit(int? id)
         {
-            var item = _context.TBLCheckItems.Find(id);
-            if (item == null)
-                return NotFound();
-
-            return PartialView("_Edit", item);
-        }
-
-        [HttpPost]
-        public JsonResult Edit([FromForm] TBL_CheckItem model)
-        {
-            if (!ModelState.IsValid)
+            if (id == null)
             {
-                // اگر ModelState نامعتبر باشد، خطاها را چاپ کن
-                var errors = string.Join(" | ", ModelState.Values.SelectMany(v => v.Errors)
-                                                                 .Select(e => e.ErrorMessage));
-                Console.WriteLine($"ModelState Errors: {errors}");
-
-                return Json(new { success = false, message = "ورودی نامعتبر!" });
+                return NotFound();
             }
 
-            var item = _context.TBLCheckItems.Find(model.Id);
+            var item = await _context.TBLCheckItems.FindAsync(id);
             if (item == null)
-                return Json(new { success = false, message = "مورد یافت نشد!" });
+            {
+                return NotFound();
+            }
 
-            // بروزرسانی مقادیر
-            item.Section = model.Section;
-            item.Description = model.Description;
-            item.Status = model.Status; // توجه کن که مقدار Status به درستی به روز می‌شود
-            item.Note = model.Note;
+            return View(item);
+        }
 
-            _context.SaveChanges();
+        // POST: Checklist/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, TBL_CheckItem model)
+        {
+            if (id != model.Id)
+            {
+                return NotFound();
+            }
 
-            return Json(new { success = true, message = "با موفقیت ویرایش شد." });
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _context.Update(model);
+                    await _context.SaveChangesAsync();
+
+                    // ارسال پیام موفقیت به صفحه با استفاده از TempData
+                    TempData["SuccessMessage"] = "اطلاعات با موفقیت ویرایش شد.";
+
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!_context.TBLCheckItems.Any(e => e.Id == model.Id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+            }
+            return View(model);
         }
 
         [HttpPost]

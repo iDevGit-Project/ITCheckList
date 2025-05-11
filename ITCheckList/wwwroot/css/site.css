@@ -143,3 +143,11 @@ body {
     .custom-btn-success:focus {
         outline: none; /* حذف outline */
     }
+.custom-toast-success {
+    background-color: #00B89B !important; /* رنگ پس‌زمینه */
+    color: white !important; /* رنگ متن */
+    direction: rtl; /* جهت متن راست به چپ */
+    text-align: right; /* چیدمان متن راست‌چین */
+    font-size: 14px;
+    font-family: 'IRANYekan';
+}

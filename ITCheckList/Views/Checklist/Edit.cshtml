@@ -1,0 +1,41 @@
+﻿@model ITCheckList.Models.TBL_CheckItem
+
+@{
+    ViewData["Title"] = "ویرایش بررسی";
+}
+
+<h4 class="text-center my-4">ویرایش اطلاعات بررسی</h4>
+
+<form asp-action="Edit" method="post" class="container" dir="rtl">
+    <input type="hidden" asp-for="Id" />
+
+    <div class="mb-3">
+        <label asp-for="Section" class="form-label">بخش</label>
+        <input asp-for="Section" class="form-control" />
+        <span asp-validation-for="Section" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Description" class="form-label">موضوع</label>
+        <input asp-for="Description" class="form-control" />
+        <span asp-validation-for="Description" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Note" class="form-label">توضیحات</label>
+        <textarea asp-for="Note" class="form-control"></textarea>
+        <span asp-validation-for="Note" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Status" class="form-label">وضعیت</label>
+        <select asp-for="Status" class="form-select">
+            <option value="true">انجام شد</option>
+            <option value="false">در حال بررسی</option>
+        </select>
+        <span asp-validation-for="Status" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-success">ثبت تغییرات</button>
+    <a asp-action="Index" class="btn btn-secondary">بازگشت</a>
+</form>
