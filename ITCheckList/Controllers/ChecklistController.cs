@@ -107,5 +107,38 @@ namespace ITCheckList.Controllers
             return Json(new { success = true, message = "آیتم با موفقیت حذف شد." });
         }
 
+        // POST: Checklist/ArchiveTodayTasks
+        [HttpPost]
+        public async Task<IActionResult> ArchiveTodayTasks()
+        {
+            // گرفتن تاریخ امروز
+            var today = DateTime.Now.Date;
+
+            // پیدا کردن کارهایی که وضعیت "انجام شد" دارند و تاریخ آنها برابر امروز است
+            var todayTasks = _context.TBLCheckItems.Where(x => x.Status == true && x.CreatedAt.Date == today).ToList();
+
+            // اگر کارهایی برای بایگانی وجود داشته باشد
+            if (todayTasks.Any())
+            {
+                // ایجاد آرایه‌ای از کارها برای بایگانی
+                var archiveItems = todayTasks.Select(task => new TBL_CheckItemArchive
+                {
+                    Section = task.Section,
+                    Description = task.Description,
+                    CreatedAt = task.CreatedAt,
+                    Note = task.Note,
+                    Status = task.Status
+                }).ToList();
+
+                // اضافه کردن کارها به جدول بایگانی
+                await _context.TBLCheckItemArchives.AddRangeAsync(archiveItems);
+                await _context.SaveChangesAsync();
+
+                return Json(new { success = true });
+            }
+
+            return Json(new { success = false });
+        }
+
     }
 }

@@ -7,5 +7,7 @@ namespace ITCheckList.Models.Context
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
         public DbSet<TBL_CheckItem> TBLCheckItems { get; set; }
+        public DbSet<TBL_CheckItemArchive> TBLCheckItemArchives { get; set; }
+
     }
 }

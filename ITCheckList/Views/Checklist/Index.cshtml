@@ -83,6 +83,8 @@
     </table>
     <!-- دکمه دریافت خروجی -->
     <div class="text-start mt-3">
+        <!-- دکمه درج در بایگانی امروز -->
+        <button class="btn custom-btn btn-outline-success" onclick="archiveTodayTasks()">درج در بایگانی امروز</button>
         <button class="btn custom-btn btn-outline-primary" onclick="printFullTable()">دریافت خروجی از اطلاعات</button>
     </div>
 
@@ -113,6 +115,27 @@
     <!--=================================================================-->
     <!--فراخوانی اسکریپت خروجی گزارش از اطلاعات-->
     <script src="~/lib/exporttableprint.js"></script>
+    <!--=================================================================-->
+    <script>
+                function archiveTodayTasks() {
+            // ارسال درخواست به سرور برای بایگانی کارهای امروز
+            $.ajax({
+                url: '/Checklist/ArchiveTodayTasks', // اکشن مربوطه
+                type: 'POST',
+                success: function(response) {
+                    if (response.success) {
+                        toastr.success('تمام کارهای امروز با موفقیت در بایگانی ذخیره شد.', 'عملیات موفقیت‌آمیز');
+                    } else {
+                        toastr.error('خطا در ذخیره‌سازی کارهای امروز. لطفاً دوباره تلاش کنید.', 'عملیات ناموفق');
+                    }
+                },
+                error: function() {
+                    toastr.error('خطا در ارسال درخواست. لطفاً دوباره تلاش کنید.', 'عملیات ناموفق');
+                }
+            });
+        }
+
+    </script>
     <!--=================================================================-->
     <script>
         $(document).ready(function () {
