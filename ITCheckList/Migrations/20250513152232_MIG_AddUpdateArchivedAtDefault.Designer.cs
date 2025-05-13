@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ITCheckList.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250509120909_MIG_DbInit_14040219")]
-    partial class MIG_DbInit_14040219
+    [Migration("20250513152232_MIG_AddUpdateArchivedAtDefault")]
+    partial class MIG_AddUpdateArchivedAtDefault
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -53,6 +53,42 @@ namespace ITCheckList.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("TBLCheckItems");
+                });
+
+            modelBuilder.Entity("ITCheckList.Models.TBL_CheckItemArchive", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("ArchivedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Note")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Section")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("Status")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("TBLCheckItemArchives");
                 });
 #pragma warning restore 612, 618
         }

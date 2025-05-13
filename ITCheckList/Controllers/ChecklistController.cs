@@ -107,38 +107,61 @@ namespace ITCheckList.Controllers
             return Json(new { success = true, message = "آیتم با موفقیت حذف شد." });
         }
 
-        // POST: Checklist/ArchiveTodayTasks
         [HttpPost]
-        public async Task<IActionResult> ArchiveTodayTasks()
+        public async Task<IActionResult> ArchiveToday(bool deleteAfterArchive = false)
         {
-            // گرفتن تاریخ امروز
-            var today = DateTime.Now.Date;
-
-            // پیدا کردن کارهایی که وضعیت "انجام شد" دارند و تاریخ آنها برابر امروز است
-            var todayTasks = _context.TBLCheckItems.Where(x => x.Status == true && x.CreatedAt.Date == today).ToList();
-
-            // اگر کارهایی برای بایگانی وجود داشته باشد
-            if (todayTasks.Any())
+            try
             {
-                // ایجاد آرایه‌ای از کارها برای بایگانی
-                var archiveItems = todayTasks.Select(task => new TBL_CheckItemArchive
+                var today = DateTime.Today;
+
+                // دریافت موارد امروز با وضعیت تایید شده
+                var todayItems = await _context.TBLCheckItems
+                    .Where(x => x.CreatedAt.Date == today && x.Status == true)
+                    .ToListAsync();
+
+                if (!todayItems.Any())
                 {
-                    Section = task.Section,
-                    Description = task.Description,
-                    CreatedAt = task.CreatedAt,
-                    Note = task.Note,
-                    Status = task.Status
+                    return BadRequest("موردی برای بایگانی یافت نشد.");
+                }
+
+                // ایجاد لیست بایگانی از آیتم‌ها
+                var archiveItems = todayItems.Select(x => new TBL_CheckItemArchive
+                {
+                    Section = x.Section,
+                    Description = x.Description,
+                    CreatedAt = x.CreatedAt,
+                    Note = x.Note,
+                    Status = x.Status
                 }).ToList();
 
-                // اضافه کردن کارها به جدول بایگانی
+                // ذخیره در جدول بایگانی
                 await _context.TBLCheckItemArchives.AddRangeAsync(archiveItems);
+
+                // حذف در صورت انتخاب کاربر
+                if (deleteAfterArchive)
+                {
+                    _context.TBLCheckItems.RemoveRange(todayItems);
+                }
+
+                // ذخیره تغییرات
                 await _context.SaveChangesAsync();
 
-                return Json(new { success = true });
+                return Ok("بایگانی با موفقیت انجام شد.");
             }
+            catch (Exception ex)
+            {
+                // لاگ خطا (در صورت نیاز، ثبت در دیتابیس یا سیستم لاگ)
+                // _logger.LogError(ex, "خطا در فرآیند بایگانی");
 
-            return Json(new { success = false });
+                return StatusCode(500, "خطا در بایگانی: " + ex.Message);
+            }
         }
 
+        [HttpGet]
+        public async Task<JsonResult> IsCheckItemTableEmpty()
+        {
+            bool isEmpty = !await _context.TBLCheckItems.AnyAsync();
+            return Json(new { isEmpty });
+        }
     }
 }

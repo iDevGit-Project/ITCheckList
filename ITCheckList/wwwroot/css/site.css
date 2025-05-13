@@ -151,3 +151,51 @@ body {
     font-size: 14px;
     font-family: 'IRANYekan';
 }
+/* ظاهر زیباتر برای SweetAlert فارسی */
+.swal2-rtl {
+    direction: rtl !important;
+    font-family: 'IRANYekan';
+    text-align: center;
+}
+
+.swal2-popup {
+    border-radius: 16px !important;
+    padding: 1.6rem 1.4rem !important;
+    text-align: center;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2) !important;
+}
+
+.swal2-title {
+    font-size: 1.4rem !important;
+    font-family: 'IRANYekan';
+    color: #00B89B !important;
+    text-align: center;
+    margin-bottom: 0.75rem !important;
+}
+
+.swal2-html-container {
+    font-size: 1rem !important;
+    font-family: 'IRANYekan';
+    text-align: center;
+    color: #444;
+}
+
+.swal2-confirm.btn {
+    background-color: #00B89B;
+    color: #fff;
+    border-radius: 8px;
+    padding: 6px 20px;
+}
+
+.swal2-cancel.btn {
+    background-color: #e0e0e0;
+    color: #333;
+    border-radius: 8px;
+    padding: 6px 20px;
+}
+
+.swal2-styled.swal2-confirm:focus,
+.swal2-styled.swal2-cancel:focus {
+    box-shadow: none !important;
+    outline: none !important;
+}

@@ -9,5 +9,13 @@ namespace ITCheckList.Models.Context
         public DbSet<TBL_CheckItem> TBLCheckItems { get; set; }
         public DbSet<TBL_CheckItemArchive> TBLCheckItemArchives { get; set; }
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<TBL_CheckItemArchive>()
+                .Property(a => a.ArchivedAt)
+                .HasDefaultValueSql("GETDATE()");
+        }
     }
 }

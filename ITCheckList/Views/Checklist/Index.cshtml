@@ -26,7 +26,7 @@
 }
 <!--=================================================================-->
 <div class="mt-5" id="reportSection" dir="rtl">
-    <h4 class="text-center fw-bold">لیست بررسی‌های روزانه دپارتمان دپارتمان فناوری اطلاعات</h4>
+    <h4 class="text-center fw-bold">مدیریت چک لیست روزانه دپارتمان فناوری اطلاعات</h4>
     <!-- نوار ابزار بالا -->
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 my-3">
         <button id="btnAdd" type="button" class="btn custom-btn-success">
@@ -84,7 +84,7 @@
     <!-- دکمه دریافت خروجی -->
     <div class="text-start mt-3">
         <!-- دکمه درج در بایگانی امروز -->
-        <button class="btn custom-btn btn-outline-success" onclick="archiveTodayTasks()">درج در بایگانی امروز</button>
+        <button id="btnArchiveToday" class="btn custom-btn btn-outline-success">ارسال گزارشات به بایگانی امروز</button>
         <button class="btn custom-btn btn-outline-primary" onclick="printFullTable()">دریافت خروجی از اطلاعات</button>
     </div>
 
@@ -117,24 +117,89 @@
     <script src="~/lib/exporttableprint.js"></script>
     <!--=================================================================-->
     <script>
-                function archiveTodayTasks() {
-            // ارسال درخواست به سرور برای بایگانی کارهای امروز
-            $.ajax({
-                url: '/Checklist/ArchiveTodayTasks', // اکشن مربوطه
-                type: 'POST',
-                success: function(response) {
-                    if (response.success) {
-                        toastr.success('تمام کارهای امروز با موفقیت در بایگانی ذخیره شد.', 'عملیات موفقیت‌آمیز');
-                    } else {
-                        toastr.error('خطا در ذخیره‌سازی کارهای امروز. لطفاً دوباره تلاش کنید.', 'عملیات ناموفق');
+        document.getElementById("btnArchiveToday")?.addEventListener("click", function () {
+            fetch('/Checklist/IsCheckItemTableEmpty')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('خطا در دریافت وضعیت جدول.');
                     }
-                },
-                error: function() {
-                    toastr.error('خطا در ارسال درخواست. لطفاً دوباره تلاش کنید.', 'عملیات ناموفق');
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.isEmpty) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'هشدار!',
+                            html: '<div style="direction: rtl;">هیچ گزارشی جهت ارسال به بایگانی امروز وجود ندارد.</div>',
+                            confirmButtonText: 'متوجه شدم',
+                            customClass: {
+                                popup: 'swal2-rtl'
+                            }
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'پاک‌سازی پس از بایگانی؟',
+                            html: '<div style="direction: rtl;">آیا مایلید پس از بایگانی، اطلاعات پاک‌سازی شوند؟<br>این کار قابل بازگشت نیست.</div>',
+                            icon: 'question',
+                            showCancelButton: true,
+                            confirmButtonText: 'بله، پاک شود',
+                            cancelButtonText: 'خیر، فقط بایگانی شود',
+                            reverseButtons: false,
+                            customClass: {
+                                popup: 'swal2-rtl',
+                                confirmButton: 'btn btn-danger',
+                                cancelButton: 'btn btn-secondary'
+                            },
+                            buttonsStyling: false
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                archiveToday(true);
+                            } else if (result.dismiss === Swal.DismissReason.cancel) {
+                                archiveToday(false);
+                            }
+                        });
+                    }
+                })
+                .catch(error => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'خطا!',
+                        html: `<div style="direction: rtl;">${error.message}</div>`,
+                        confirmButtonText: 'باشه'
+                    });
+                });
+        });
+
+        function archiveToday(deleteAfter) {
+            fetch(`/Checklist/ArchiveToday?deleteAfterArchive=${deleteAfter}`, {
+                method: 'POST'
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => { throw new Error(text); });
                 }
+                return response.text();
+            })
+            .then(message => {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'موفق!',
+                    html: `<div style="direction: rtl;">${message}</div>`,
+                    confirmButtonText: 'باشه'
+                }).then(() => {
+                    // صفحه را رفرش کن یا جدول را ری‌لود کن
+                    location.reload();
+                });
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'خطا!',
+                    html: `<div style="direction: rtl;">${error.message}</div>`,
+                    confirmButtonText: 'متوجه شدم'
+                });
             });
         }
-
     </script>
     <!--=================================================================-->
     <script>
