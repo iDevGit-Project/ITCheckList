@@ -202,3 +202,17 @@ body {
 .swal-wide {
     width: 600px !important; /* عرض بیشتر برای جلوگیری از به‌هم‌ریختگی */
 }
+.done-row {
+    background-color: #00b89b14 !important;
+}
+.status-done {
+    color: #00a188;
+    /* background-color: #f0fff9; */
+    font-weight: bold;
+}
+
+.status-pending {
+    color: #D80016;
+    /* background-color: #ffe9eb; */
+    font-weight: bold;
+}

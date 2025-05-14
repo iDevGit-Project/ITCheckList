@@ -1,0 +1,72 @@
+﻿@model TBL_ArchiveView
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css">
+<!--=================================================================-->
+<div class="row mb-3">
+    <div class="col-md-4">
+        <form asp-action="ArchiveIndex" method="get" class="d-flex align-items-center">
+            <input type="text" id="selectedDate" name="selectedDate" value="@Model.SelectedDate" class="form-control text-center" placeholder="تاریخ را انتخاب کنید" />
+            <button type="submit" class="btn btn-primary ms-2">جستجو</button>
+        </form>
+    </div>
+</div>
+
+<table class="table table-bordered text-center align-middle responsive-table" id="reportTable">
+    <thead class="table-light">
+        <tr>
+            <th>ردیف</th>
+            <th>بخش</th>
+            <th>موضوع</th>
+            <th>تاریخ</th>
+            <th>توضیحات</th>
+            <th>وضعیت</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model.Items != null && Model.Items.Any())
+        {
+            int i = 1;
+            foreach (var item in Model.Items)
+            {
+                <tr class="@(item.Status ? "done-row" : "")">
+                    <td>@(i++)</td>
+                    <td>@item.Section</td>
+                    <td>@item.Description</td>
+                    <td>@item.CreatedAt.ToString("yyyy/MM/dd")</td>
+                    <td>@item.Note</td>
+                    <td>
+                        <span class="@(item.Status ? "status-done" : "status-pending")">
+                            @(item.Status ? "انجام شد." : "در دست اقدام.")
+                        </span>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+<!-- دکمه دریافت خروجی -->
+<div class="text-start mt-3">
+    <!-- دکمه درج در بایگانی امروز -->
+    <button id="btnPrintTable" class="btn custom-btn btn-outline-primary">دریافت خروجی از اطلاعات</button>
+</div>
+@section ITCheckListArciveView {
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/persian-date@0.1.8/dist/persian-date.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
+    <!--=================================================================-->
+    <!--فراخوانی اسکریپت خروجی گزارش از اطلاعات-->
+    <script src="~/js/exportTableArchivePrint.js"></script>
+    <script>
+        document.getElementById("btnPrintTable")?.addEventListener("click", exportTableArchivePrint);
+    </script>
+    <!--=================================================================-->
+    <script>
+        $(document).ready(function () {
+            $('#selectedDate').persianDatepicker({
+                format: 'YYYY/MM/DD',
+                initialValue: false
+            });
+        });
+    </script>
+
+}

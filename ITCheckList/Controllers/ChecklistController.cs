@@ -131,46 +131,42 @@ namespace ITCheckList.Controllers
                     return BadRequest("موردی برای بایگانی یافت نشد.");
                 }
 
-                // دریافت همه آرشیوهای امروز برای بررسی تکراری بودن
+                // دریافت آرشیوهای امروز برای بررسی تکراری بودن
                 var archivedItemsToday = await _context.TBLCheckItemArchives
                     .Where(x => x.CreatedAt.Date == today)
                     .ToListAsync();
 
-                // ایجاد لیست نهایی آیتم‌هایی که در آرشیو موجود نیستند
-                var archiveItems = todayItems
+                // فیلتر کردن آیتم‌هایی که هنوز آرشیو نشده‌اند
+                var itemsToArchive = todayItems
                     .Where(item => !archivedItemsToday.Any(a =>
                         a.Section == item.Section &&
                         a.Description == item.Description &&
                         a.Note == item.Note &&
                         a.Status == item.Status))
-                    .Select(x => new TBL_CheckItemArchive
-                    {
-                        Section = x.Section,
-                        Description = x.Description,
-                        CreatedAt = x.CreatedAt,
-                        Note = x.Note,
-                        Status = x.Status
-                    }).ToList();
+                    .ToList();
 
-                if (!archiveItems.Any())
+                if (!itemsToArchive.Any())
                 {
                     return BadRequest("تمام موارد امروز قبلاً در بایگانی ثبت شده‌اند.");
                 }
 
-                // ذخیره در جدول بایگانی
+                // تبدیل به مدل آرشیو
+                var archiveItems = itemsToArchive.Select(x => new TBL_CheckItemArchive
+                {
+                    Section = x.Section,
+                    Description = x.Description,
+                    CreatedAt = x.CreatedAt,
+                    Note = x.Note,
+                    Status = x.Status
+                }).ToList();
+
+                // ذخیره در جدول آرشیو
                 await _context.TBLCheckItemArchives.AddRangeAsync(archiveItems);
 
-                // در صورت انتخاب، حذف از جدول اصلی
+                // در صورت نیاز، حذف از جدول اصلی با موجودیت واقعی
                 if (deleteAfterArchive)
                 {
-                    _context.TBLCheckItems.RemoveRange(archiveItems.Select(x => new TBL_CheckItem
-                    {
-                        Section = x.Section,
-                        Description = x.Description,
-                        CreatedAt = x.CreatedAt,
-                        Note = x.Note,
-                        Status = x.Status
-                    }));
+                    _context.TBLCheckItems.RemoveRange(itemsToArchive);
                 }
 
                 await _context.SaveChangesAsync();
@@ -182,6 +178,7 @@ namespace ITCheckList.Controllers
                 return StatusCode(500, "خطا در بایگانی: " + ex.Message);
             }
         }
+
 
         [HttpGet]
         public async Task<JsonResult> CheckPreviousDayData()
@@ -212,5 +209,34 @@ namespace ITCheckList.Controllers
             return Json(new { isEmpty });
         }
         #endregion
+
+        public async Task<IActionResult> ArchiveIndex(string selectedDate)
+        {
+            var items = new List<TBL_CheckItemArchive>();
+
+            if (!string.IsNullOrEmpty(selectedDate))
+            {
+                // تبدیل تاریخ شمسی به میلادی
+                var persianCalendar = new System.Globalization.PersianCalendar();
+                var parts = selectedDate.Split('/');
+                var year = int.Parse(parts[0]);
+                var month = int.Parse(parts[1]);
+                var day = int.Parse(parts[2]);
+                var miladiDate = persianCalendar.ToDateTime(year, month, day, 0, 0, 0, 0);
+
+                items = await _context.TBLCheckItemArchives
+                    .Where(x => x.CreatedAt.Date == miladiDate.Date)
+                    .ToListAsync();
+            }
+
+            var model = new TBL_ArchiveView
+            {
+                SelectedDate = selectedDate,
+                Items = items
+            };
+
+            return View(model);
+        }
+
     }
 }
