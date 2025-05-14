@@ -120,9 +120,7 @@
         document.getElementById("btnArchiveToday")?.addEventListener("click", function () {
             fetch('/Checklist/IsCheckItemTableEmpty')
                 .then(response => {
-                    if (!response.ok) {
-                        throw new Error('خطا در دریافت وضعیت جدول.');
-                    }
+                    if (!response.ok) throw new Error('خطا در بررسی وضعیت جدول.');
                     return response.json();
                 })
                 .then(data => {
@@ -131,33 +129,55 @@
                             icon: 'warning',
                             title: 'هشدار!',
                             html: '<div style="direction: rtl;">هیچ گزارشی جهت ارسال به بایگانی امروز وجود ندارد.</div>',
-                            confirmButtonText: 'متوجه شدم',
-                            customClass: {
-                                popup: 'swal2-rtl'
-                            }
+                            confirmButtonText: 'متوجه شدم'
                         });
                     } else {
-                        Swal.fire({
-                            title: 'پاک‌سازی پس از بایگانی؟',
-                            html: '<div style="direction: rtl;">آیا مایلید پس از بایگانی، اطلاعات پاک‌سازی شوند؟<br>این کار قابل بازگشت نیست.</div>',
-                            icon: 'question',
-                            showCancelButton: true,
-                            confirmButtonText: 'بله، پاک شود',
-                            cancelButtonText: 'خیر، فقط بایگانی شود',
-                            reverseButtons: false,
-                            customClass: {
-                                popup: 'swal2-rtl',
-                                confirmButton: 'btn btn-danger',
-                                cancelButton: 'btn btn-secondary'
-                            },
-                            buttonsStyling: false
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                archiveToday(true);
-                            } else if (result.dismiss === Swal.DismissReason.cancel) {
-                                archiveToday(false);
-                            }
-                        });
+                        // بررسی وضعیت آیتم‌ها (آیا همه انجام شده‌اند؟)
+                        fetch('/Checklist/HasPendingItems')
+                            .then(response => response.json())
+                            .then(pendingData => {
+                                if (pendingData.hasPending) {
+                                    Swal.fire({
+                                        icon: 'warning',
+                                        title: 'عدم امکان بایگانی!',
+                                        html: `
+                                            <div style="direction: rtl; text-align: right; font-size: 15px; line-height: 2;">
+                                                در حال حاضر برخی از موارد در جدول "کارهای امروز" دارای وضعیت "در دست بررسی" یا "در حال اقدام" هستند.
+                                                <br> لطفاً پیش از بایگانی، تمام موارد را به وضعیت "انجام شد" تغییر دهید.
+                                            </div>
+                                        `,
+                                        confirmButtonText: 'متوجه شدم',
+                                        customClass: {
+                                            popup: 'swal-wide'  // کلاس سفارشی برای عرض بیشتر
+                                        }
+                                    });
+                                } else {
+                                    // نمایش پیام تأیید برای بایگانی
+                                    Swal.fire({
+                                        title: 'پاک‌سازی پس از بایگانی؟',
+                                        html: '<div style="direction: rtl;">آیا مایلید پس از بایگانی، اطلاعات پاک‌سازی شوند؟<br>این کار قابل بازگشت نیست.</div>',
+                                        icon: 'question',
+                                        showDenyButton: true,
+                                        showCancelButton: true,
+                                        confirmButtonText: 'بله، پاک شود',
+                                        denyButtonText: 'خیر، فقط بایگانی شود',
+                                        cancelButtonText: 'لغو عملیات',
+                                        customClass: {
+                                            popup: 'swal2-rtl',
+                                            confirmButton: 'btn btn-danger',
+                                            denyButton: 'btn btn-secondary',
+                                            cancelButton: 'btn btn-light border'
+                                        },
+                                        buttonsStyling: false
+                                    }).then((result) => {
+                                        if (result.isConfirmed) {
+                                            archiveToday(true);
+                                        } else if (result.isDenied) {
+                                            archiveToday(false);
+                                        }
+                                    });
+                                }
+                            });
                     }
                 })
                 .catch(error => {
@@ -170,7 +190,74 @@
                 });
         });
 
-        function archiveToday(deleteAfter) {
+        // document.getElementById("btnArchiveToday")?.addEventListener("click", function () {
+        //     fetch('/Checklist/IsCheckItemTableEmpty')
+        //         .then(response => {
+        //             if (!response.ok) {
+        //                 throw new Error('خطا در دریافت وضعیت جدول.');
+        //             }
+        //             return response.json();
+        //         })
+        //         .then(data => {
+        //             if (data.isEmpty) {
+        //                 Swal.fire({
+        //                     icon: 'warning',
+        //                     title: 'هشدار!',
+        //                     html: '<div style="direction: rtl;">هیچ گزارشی جهت ارسال به بایگانی امروز وجود ندارد.</div>',
+        //                     confirmButtonText: 'متوجه شدم',
+        //                     allowOutsideClick: false,
+        //                     allowEscapeKey: false,
+        //                     customClass: {
+        //                         popup: 'swal2-rtl'
+        //                     }
+        //                 });
+        //             } else {
+        //                 Swal.fire({
+        //                     title: 'پاک‌سازی پس از بایگانی؟',
+        //                     html: '<div style="direction: rtl;">آیا مایلید پس از بایگانی، اطلاعات پاک‌سازی شوند؟<br>این کار قابل بازگشت نیست.</div>',
+        //                     icon: 'question',
+        //                     showCancelButton: true,
+        //                     showDenyButton: true,
+        //                     confirmButtonText: 'بله، پاک شود',
+        //                     denyButtonText: 'خیر، فقط بایگانی شود',
+        //                     cancelButtonText: 'لغو عملیات',
+        //                     reverseButtons: true,
+        //                     allowOutsideClick: false,
+        //                     allowEscapeKey: false,
+        //                     customClass: {
+        //                         popup: 'swal2-rtl',
+        //                         confirmButton: 'btn btn-danger',
+        //                         denyButton: 'btn btn-primary',
+        //                         cancelButton: 'btn btn-secondary'
+        //                     },
+        //                     buttonsStyling: false
+        //                 }).then((result) => {
+        //                     if (result.isConfirmed) {
+        //                         // کاربر خواسته پاکسازی هم انجام بشه
+        //                         archiveToday(true);
+        //                     } else if (result.isDenied) {
+        //                         // فقط بایگانی بدون حذف
+        //                         archiveToday(false);
+        //                     }
+        //                     // اگر کاربر cancel رو زد، کاری انجام نشه (لغو کامل عملیات)
+        //                 });
+        //             }
+        //         })
+        //         .catch(error => {
+        //             Swal.fire({
+        //                 icon: 'error',
+        //                 title: 'خطا!',
+        //                 html: `<div style="direction: rtl;">${error.message}</div>`,
+        //                 confirmButtonText: 'باشه',
+        //                 allowOutsideClick: false,
+        //                 allowEscapeKey: false
+        //             });
+        //         });
+        // });
+    </script>
+    <!--=================================================================-->
+    <script>
+            function archiveToday(deleteAfter) {
             fetch(`/Checklist/ArchiveToday?deleteAfterArchive=${deleteAfter}`, {
                 method: 'POST'
             })

@@ -163,5 +163,26 @@ namespace ITCheckList.Controllers
             bool isEmpty = !await _context.TBLCheckItems.AnyAsync();
             return Json(new { isEmpty });
         }
+
+        [HttpGet]
+        public async Task<JsonResult> CheckPreviousDayData()
+        {
+            var today = DateTime.Today;
+
+            var hasOldData = await _context.TBLCheckItems
+                .AnyAsync(x => x.CreatedAt.Date < today);
+
+            return Json(new { hasOldData });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> HasPendingItems()
+        {
+            var hasPending = await _context.TBLCheckItems
+                .AnyAsync(x => x.Status == false); // یعنی هنوز "انجام نشده"
+
+            return Json(new { hasPending });
+        }
+
     }
 }

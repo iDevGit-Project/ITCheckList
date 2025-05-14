@@ -199,3 +199,6 @@ body {
     box-shadow: none !important;
     outline: none !important;
 }
+.swal-wide {
+    width: 600px !important; /* عرض بیشتر برای جلوگیری از به‌هم‌ریختگی */
+}

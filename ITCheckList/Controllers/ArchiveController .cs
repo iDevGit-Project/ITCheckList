@@ -23,6 +23,23 @@ namespace ITCheckList.Controllers
                 .Where(x => x.CreatedAt.Date == today && x.Status == true)
                 .ToListAsync();
 
+            // بررسی وجود آیتم‌هایی که هنوز کامل نشده‌اند
+            var pendingItemsExist = await _context.TBLCheckItems
+                .AnyAsync(x => x.Status == false);
+
+            if (pendingItemsExist)
+            {
+                // اگر هنوز آیتم ناقص وجود داره، نمایش صفحه خطا یا ریدایرکت
+                TempData["ErrorMessage"] = "برخی از آیتم‌ها هنوز انجام نشده‌اند و نمی‌توان عملیات بایگانی را انجام داد.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            //if (!todayItems.Any())
+            //{
+            //    TempData["Warning"] = "هیچ گزارشی با تاریخ امروز برای بایگانی وجود ندارد.";
+            //    return RedirectToAction("Index");
+            //}
+
             foreach (var item in todayItems)
             {
                 var archive = new TBL_CheckItemArchive
