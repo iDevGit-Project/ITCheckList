@@ -19,7 +19,7 @@ namespace ITCheckList.Controllers
             var items = _context.TBLCheckItems.OrderByDescending(c => c.CreatedAt).ToList();
             return View(items);
         }
-
+        #region عملیات ثبت بررسی جدید
         [HttpGet]
         public IActionResult Create()
         {
@@ -39,7 +39,9 @@ namespace ITCheckList.Controllers
             var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
             return Json(new { success = false, message = string.Join(" - ", errors) });
         }
+        #endregion
 
+        #region عملیات ویرایش بررسی های جاری
         // GET: Checklist/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
@@ -93,7 +95,9 @@ namespace ITCheckList.Controllers
             }
             return View(model);
         }
+        #endregion
 
+        #region عملیات حذف بررسی های جاری
         [HttpPost]
         public JsonResult Delete(int id)
         {
@@ -107,6 +111,9 @@ namespace ITCheckList.Controllers
             return Json(new { success = true, message = "آیتم با موفقیت حذف شد." });
         }
 
+        #endregion
+
+        #region متد های مربوط به عملیات آرشیو کردن اطلاعات
         [HttpPost]
         public async Task<IActionResult> ArchiveToday(bool deleteAfterArchive = false)
         {
@@ -114,7 +121,7 @@ namespace ITCheckList.Controllers
             {
                 var today = DateTime.Today;
 
-                // دریافت موارد امروز با وضعیت تایید شده
+                // دریافت آیتم‌های امروز با وضعیت تایید شده
                 var todayItems = await _context.TBLCheckItems
                     .Where(x => x.CreatedAt.Date == today && x.Status == true)
                     .ToListAsync();
@@ -124,44 +131,56 @@ namespace ITCheckList.Controllers
                     return BadRequest("موردی برای بایگانی یافت نشد.");
                 }
 
-                // ایجاد لیست بایگانی از آیتم‌ها
-                var archiveItems = todayItems.Select(x => new TBL_CheckItemArchive
+                // دریافت همه آرشیوهای امروز برای بررسی تکراری بودن
+                var archivedItemsToday = await _context.TBLCheckItemArchives
+                    .Where(x => x.CreatedAt.Date == today)
+                    .ToListAsync();
+
+                // ایجاد لیست نهایی آیتم‌هایی که در آرشیو موجود نیستند
+                var archiveItems = todayItems
+                    .Where(item => !archivedItemsToday.Any(a =>
+                        a.Section == item.Section &&
+                        a.Description == item.Description &&
+                        a.Note == item.Note &&
+                        a.Status == item.Status))
+                    .Select(x => new TBL_CheckItemArchive
+                    {
+                        Section = x.Section,
+                        Description = x.Description,
+                        CreatedAt = x.CreatedAt,
+                        Note = x.Note,
+                        Status = x.Status
+                    }).ToList();
+
+                if (!archiveItems.Any())
                 {
-                    Section = x.Section,
-                    Description = x.Description,
-                    CreatedAt = x.CreatedAt,
-                    Note = x.Note,
-                    Status = x.Status
-                }).ToList();
+                    return BadRequest("تمام موارد امروز قبلاً در بایگانی ثبت شده‌اند.");
+                }
 
                 // ذخیره در جدول بایگانی
                 await _context.TBLCheckItemArchives.AddRangeAsync(archiveItems);
 
-                // حذف در صورت انتخاب کاربر
+                // در صورت انتخاب، حذف از جدول اصلی
                 if (deleteAfterArchive)
                 {
-                    _context.TBLCheckItems.RemoveRange(todayItems);
+                    _context.TBLCheckItems.RemoveRange(archiveItems.Select(x => new TBL_CheckItem
+                    {
+                        Section = x.Section,
+                        Description = x.Description,
+                        CreatedAt = x.CreatedAt,
+                        Note = x.Note,
+                        Status = x.Status
+                    }));
                 }
 
-                // ذخیره تغییرات
                 await _context.SaveChangesAsync();
 
                 return Ok("بایگانی با موفقیت انجام شد.");
             }
             catch (Exception ex)
             {
-                // لاگ خطا (در صورت نیاز، ثبت در دیتابیس یا سیستم لاگ)
-                // _logger.LogError(ex, "خطا در فرآیند بایگانی");
-
                 return StatusCode(500, "خطا در بایگانی: " + ex.Message);
             }
-        }
-
-        [HttpGet]
-        public async Task<JsonResult> IsCheckItemTableEmpty()
-        {
-            bool isEmpty = !await _context.TBLCheckItems.AnyAsync();
-            return Json(new { isEmpty });
         }
 
         [HttpGet]
@@ -183,6 +202,15 @@ namespace ITCheckList.Controllers
 
             return Json(new { hasPending });
         }
+        #endregion
 
+        #region بررسی وجود اطلاعات در جدول به جهت دریافت خروجی
+        [HttpGet]
+        public async Task<JsonResult> IsCheckItemTableEmpty()
+        {
+            bool isEmpty = !await _context.TBLCheckItems.AnyAsync();
+            return Json(new { isEmpty });
+        }
+        #endregion
     }
 }

@@ -85,7 +85,7 @@
     <div class="text-start mt-3">
         <!-- دکمه درج در بایگانی امروز -->
         <button id="btnArchiveToday" class="btn custom-btn btn-outline-success">ارسال گزارشات به بایگانی امروز</button>
-        <button class="btn custom-btn btn-outline-primary" onclick="printFullTable()">دریافت خروجی از اطلاعات</button>
+        <button id="btnPrintTable" class="btn custom-btn btn-outline-primary">دریافت خروجی از اطلاعات</button>
     </div>
 
 </div>
@@ -115,6 +115,42 @@
     <!--=================================================================-->
     <!--فراخوانی اسکریپت خروجی گزارش از اطلاعات-->
     <script src="~/lib/exporttableprint.js"></script>
+    <!--=================================================================-->
+    <script>
+        document.getElementById("btnPrintTable")?.addEventListener("click", function () {
+            fetch('/Checklist/IsCheckItemTableEmpty')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("خطا در دریافت وضعیت جدول");
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.isEmpty) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'جدول خالی است!',
+                            html: '<div style="direction: rtl;">هیچ داده‌ای برای چاپ موجود نیست.</div>',
+                            confirmButtonText: 'باشه',
+                            customClass: {
+                                popup: 'swal2-rtl'
+                            }
+                        });
+                    } else {
+                        // فقط اگر جدول خالی نبود، چاپ اجرا شود
+                        printFullTable();
+                    }
+                })
+                .catch(error => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'خطا!',
+                        html: `<div style="direction: rtl;">${error.message}</div>`,
+                        confirmButtonText: 'باشه'
+                    });
+                });
+        });
+    </script>
     <!--=================================================================-->
     <script>
         document.getElementById("btnArchiveToday")?.addEventListener("click", function () {
