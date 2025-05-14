@@ -2,6 +2,7 @@
 using ITCheckList.Models.Context;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 
 namespace ITCheckList.Controllers
 {
@@ -210,33 +211,78 @@ namespace ITCheckList.Controllers
         }
         #endregion
 
-        public async Task<IActionResult> ArchiveIndex(string selectedDate)
+        #region عملیات مربوط به دریافت گزارش از جدول بایگانی
+        // GET: نمایش صفحه انتخاب تاریخ
+        public IActionResult ArchiveIndex()
         {
-            var items = new List<TBL_CheckItemArchive>();
-
-            if (!string.IsNullOrEmpty(selectedDate))
-            {
-                // تبدیل تاریخ شمسی به میلادی
-                var persianCalendar = new System.Globalization.PersianCalendar();
-                var parts = selectedDate.Split('/');
-                var year = int.Parse(parts[0]);
-                var month = int.Parse(parts[1]);
-                var day = int.Parse(parts[2]);
-                var miladiDate = persianCalendar.ToDateTime(year, month, day, 0, 0, 0, 0);
-
-                items = await _context.TBLCheckItemArchives
-                    .Where(x => x.CreatedAt.Date == miladiDate.Date)
-                    .ToListAsync();
-            }
-
-            var model = new TBL_ArchiveView
-            {
-                SelectedDate = selectedDate,
-                Items = items
-            };
-
-            return View(model);
+            return View();
         }
 
+        // POST: دریافت داده‌های آرشیو بر اساس تاریخ شمسی انتخاب‌شده
+        [HttpPost]
+        public IActionResult ArchiveIndex(string selectedDate)
+        {
+            if (string.IsNullOrEmpty(selectedDate))
+            {
+                ViewBag.ErrorMessage = "لطفاً یک تاریخ انتخاب کنید.";
+                return View();
+            }
+
+            try
+            {
+                // تبدیل ارقام فارسی به انگلیسی
+                selectedDate = ConvertPersianToEnglishNumbers(selectedDate);
+
+                var persianCalendar = new System.Globalization.PersianCalendar();
+                var parts = selectedDate.Split('/');
+                if (parts.Length != 3)
+                {
+                    ViewBag.ErrorMessage = "فرمت تاریخ نادرست است.";
+                    return View();
+                }
+
+                int year = int.Parse(parts[0]);
+                int month = int.Parse(parts[1]);
+                int day = int.Parse(parts[2]);
+
+                var selectedMiladiDate = persianCalendar.ToDateTime(year, month, day, 0, 0, 0, 0);
+                var nextDay = selectedMiladiDate.AddDays(1);
+
+                var archives = _context.TBLCheckItemArchives
+                    .Where(x => x.CreatedAt >= selectedMiladiDate && x.CreatedAt < nextDay)
+                    .OrderBy(x => x.CreatedAt)
+                    .ToList();
+
+                if (!archives.Any())
+                {
+                    ViewBag.NoData = "برای تاریخ انتخاب‌شده داده‌ای در بایگانی موجود نیست.";
+                }
+
+                ViewBag.SelectedDate = selectedDate;
+                return View(archives);
+            }
+            catch (Exception ex)
+            {
+                ViewBag.ErrorMessage = "خطا در پردازش تاریخ: " + ex.Message;
+                return View();
+            }
+        }
+
+        private string ConvertPersianToEnglishNumbers(string input)
+        {
+            if (string.IsNullOrEmpty(input)) return input;
+
+            string[] persianDigits = { "۰", "۱", "۲", "۳", "۴", "۵", "۶", "۷", "۸", "۹" };
+            string[] englishDigits = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
+
+            for (int i = 0; i < persianDigits.Length; i++)
+            {
+                input = input.Replace(persianDigits[i], englishDigits[i]);
+            }
+
+            return input;
+        }
+
+        #endregion
     }
 }

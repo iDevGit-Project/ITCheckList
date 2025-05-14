@@ -1,72 +1,69 @@
-﻿@model TBL_ArchiveView
+﻿@model List<TBL_CheckItemArchive>
+@{
+    ViewData["Title"] = "گزارش بایگانی بر اساس تاریخ";
+    Layout = "~/Views/Shared/_Layout.cshtml"; // اگر از Layout استفاده می‌کنی
+    <link href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css" rel="stylesheet" />
+    <!-- فایل CSS شما که فونت رو override می‌کنه -->
+    <link href="~/css/site.css" rel="stylesheet" />
+}
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css">
-<!--=================================================================-->
-<div class="row mb-3">
-    <div class="col-md-4">
-        <form asp-action="ArchiveIndex" method="get" class="d-flex align-items-center">
-            <input type="text" id="selectedDate" name="selectedDate" value="@Model.SelectedDate" class="form-control text-center" placeholder="تاریخ را انتخاب کنید" />
-            <button type="submit" class="btn btn-primary ms-2">جستجو</button>
-        </form>
-    </div>
-</div>
+<h2 class="text-center mt-3">گزارش بایگانی بر اساس تاریخ شمسی</h2>
 
-<table class="table table-bordered text-center align-middle responsive-table" id="reportTable">
-    <thead class="table-light">
-        <tr>
-            <th>ردیف</th>
-            <th>بخش</th>
-            <th>موضوع</th>
-            <th>تاریخ</th>
-            <th>توضیحات</th>
-            <th>وضعیت</th>
-        </tr>
-    </thead>
-    <tbody>
-        @if (Model.Items != null && Model.Items.Any())
-        {
-            int i = 1;
-            foreach (var item in Model.Items)
+<form method="post" asp-action="ArchiveIndex" class="text-center mt-4">
+    <input type="text" id="selectedDate" name="selectedDate" placeholder="تاریخ را انتخاب کنید" class="form-control d-inline-block w-auto" autocomplete="off"  />
+    <button type="submit" class="btn btn-primary">نمایش گزارش</button>
+</form>
+
+@if (ViewBag.ErrorMessage != null)
+{
+    <div class="alert alert-danger mt-3 text-center">@ViewBag.ErrorMessage</div>
+}
+
+@if (ViewBag.NoData != null)
+{
+    <div class="alert alert-warning mt-3 text-center">@ViewBag.NoData</div>
+}
+
+@if (Model != null && Model.Any())
+{
+    <table class="table table-bordered mt-4" dir="rtl">
+        <thead class="table-light text-center">
+            <tr>
+                <th>ردیف</th>
+                <th>بخش</th>
+                <th>توضیحات</th>
+                <th>یادداشت</th>
+                <th>وضعیت</th>
+                <th>ساعت و تاریخ ثبت</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < Model.Count; i++)
             {
-                <tr class="@(item.Status ? "done-row" : "")">
-                    <td>@(i++)</td>
-                    <td>@item.Section</td>
-                    <td>@item.Description</td>
-                    <td>@item.CreatedAt.ToString("yyyy/MM/dd")</td>
-                    <td>@item.Note</td>
-                    <td>
-                        <span class="@(item.Status ? "status-done" : "status-pending")">
-                            @(item.Status ? "انجام شد." : "در دست اقدام.")
-                        </span>
-                    </td>
+                <tr class="text-center @(Model[i].Status == true ? "table-success" : "")">
+                    <td>@(i + 1)</td>
+                    <td>@Model[i].Section</td>
+                    <td>@Model[i].Description</td>
+                    <td>@Model[i].Note</td>
+                    <td>@(Model[i].Status ? "انجام شد" : "انجام نشده")</td>
+                    <td>@Model[i].CreatedAt.ToString("yyyy/MM/dd - HH:mm")</td>
                 </tr>
             }
-        }
-    </tbody>
-</table>
-<!-- دکمه دریافت خروجی -->
-<div class="text-start mt-3">
-    <!-- دکمه درج در بایگانی امروز -->
-    <button id="btnPrintTable" class="btn custom-btn btn-outline-primary">دریافت خروجی از اطلاعات</button>
-</div>
-@section ITCheckListArciveView {
+        </tbody>
+    </table>
+}
+
+@section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/persian-date@0.1.8/dist/persian-date.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/persian-date/dist/persian-date.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
-    <!--=================================================================-->
-    <!--فراخوانی اسکریپت خروجی گزارش از اطلاعات-->
-    <script src="~/js/exportTableArchivePrint.js"></script>
-    <script>
-        document.getElementById("btnPrintTable")?.addEventListener("click", exportTableArchivePrint);
-    </script>
-    <!--=================================================================-->
     <script>
         $(document).ready(function () {
-            $('#selectedDate').persianDatepicker({
-                format: 'YYYY/MM/DD',
+            $("#selectedDate").persianDatepicker({
+                format: "YYYY/MM/DD",
+                autoClose: true,
                 initialValue: false
             });
         });
     </script>
-
 }

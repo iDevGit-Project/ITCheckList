@@ -1,25 +1,22 @@
 ﻿@font-face {
-    font-family: 'IRANYekan';
-    src: url('/fonts/IRANYekanXFaNum-Regular.ttf') format('truetype');
+    font-family: 'IRANYekanXFaNum-Regular';
+    src: 
+        url('/fonts/IRANYekanXFaNum-Regular.woff2') format('woff2'), 
+        url('/fonts/IRANYekanXFaNum-Regular.woff') format('woff'), 
+        url('/fonts/IRANYekanXFaNum-Regular.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
 }
 
-@font-face {
-    font-family: 'IRANYekan';
-    src: url('/fonts/IRANYekanXFaNum-Bold.ttf') format('truetype');
-    font-weight: bold;
-    font-style: normal;
-}
 html {
     font-size: 14px;
-    font-family: 'IRANYekan';
+    font-family: 'IRANYekanXFaNum-Regular';
 }
 
 @media (min-width: 768px) {
     html {
         font-size: 14px;
-        font-family: 'IRANYekan';
+        font-family: 'IRANYekanXFaNum-Regular';
     }
 }
 
@@ -34,7 +31,7 @@ html {
 
 body {
     margin-bottom: 60px;
-    font-family: 'IRANYekan';
+    font-family: 'IRANYekanXFaNum-Regular';
 }
 
 @media (max-width: 768px) {
@@ -149,12 +146,12 @@ body {
     direction: rtl; /* جهت متن راست به چپ */
     text-align: right; /* چیدمان متن راست‌چین */
     font-size: 14px;
-    font-family: 'IRANYekan';
+    font-family: 'IRANYekanXFaNum-Regular';
 }
 /* ظاهر زیباتر برای SweetAlert فارسی */
 .swal2-rtl {
     direction: rtl !important;
-    font-family: 'IRANYekan';
+    font-family: 'IRANYekanXFaNum-Regular';
     text-align: center;
 }
 
@@ -167,7 +164,7 @@ body {
 
 .swal2-title {
     font-size: 1.4rem !important;
-    font-family: 'IRANYekan';
+    font-family: 'IRANYekanXFaNum-Regular';
     color: #00B89B !important;
     text-align: center;
     margin-bottom: 0.75rem !important;
@@ -175,7 +172,7 @@ body {
 
 .swal2-html-container {
     font-size: 1rem !important;
-    font-family: 'IRANYekan';
+    font-family: 'IRANYekanXFaNum-Regular';
     text-align: center;
     color: #444;
 }
@@ -216,3 +213,30 @@ body {
     /* background-color: #ffe9eb; */
     font-weight: bold;
 }
+
+/* اعمال فونت سفارشی به ورودی تقویم */
+#selectedDate {
+    font-family: 'IRANYekanXFaNum-Regular' !important;
+    font-size: 14px !important;
+    direction: rtl;
+    text-align: right;
+}
+
+/* اعمال فونت سفارشی به popup و اجزای persian-datepicker */
+.pwt-datepicker-container,
+.pwt-date-container,
+.pwt-cal-header,
+.pwt-cal-year,
+.pwt-cal-month,
+.pwt-days,
+.pwt-btn,
+.pwt-nav-btn,
+.pwt-time-picker,
+.pwt-selected-date,
+.pwt-cal-footer {
+    font-family: 'IRANYekanXFaNum-Regular' !important;
+    font-size: 14px !important;
+    direction: rtl !important;
+    text-align: center !important;
+}
+
