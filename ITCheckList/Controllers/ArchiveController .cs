@@ -14,6 +14,15 @@ namespace ITCheckList.Controllers
             _context = context;
         }
 
+        // نمایش آرشیو
+        public async Task<IActionResult> Index()
+        {
+            var data = await _context.TBLCheckItemArchives
+                .OrderByDescending(x => x.ArchivedAt)
+                .ToListAsync();
+            return View(data);
+        }
+
         // بایگانی اطلاعات امروز
         [HttpPost]
         public async Task<IActionResult> ArchiveToday()
@@ -62,15 +71,6 @@ namespace ITCheckList.Controllers
 
             TempData["Success"] = "کارهای امروز با موفقیت بایگانی شدند.";
             return RedirectToAction("Index", "Checklist");
-        }
-
-        // نمایش آرشیو
-        public async Task<IActionResult> Index()
-        {
-            var data = await _context.TBLCheckItemArchives
-                .OrderByDescending(x => x.ArchivedAt)
-                .ToListAsync();
-            return View(data);
         }
     }
 }

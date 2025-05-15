@@ -202,7 +202,7 @@ namespace ITCheckList.Controllers
         }
         #endregion
 
-        #region بررسی وجود اطلاعات در جدول به جهت دریافت خروجی
+        #region بررسی وجود اطلاعات در جدول تسک های روزانه
         [HttpGet]
         public async Task<JsonResult> IsCheckItemTableEmpty()
         {
@@ -219,35 +219,85 @@ namespace ITCheckList.Controllers
         }
 
         // POST: دریافت داده‌های آرشیو بر اساس تاریخ شمسی انتخاب‌شده
+        //[HttpPost]
+        //public IActionResult ArchiveIndex(string selectedDate)
+        //{
+        //    if (string.IsNullOrEmpty(selectedDate))
+        //    {
+        //        ViewBag.ErrorMessage = "لطفاً یک تاریخ انتخاب کنید.";
+        //        return View();
+        //    }
+
+        //    try
+        //    {
+        //        // تبدیل ارقام فارسی به انگلیسی
+        //        selectedDate = ConvertPersianToEnglishNumbers(selectedDate);
+
+        //        var persianCalendar = new System.Globalization.PersianCalendar();
+        //        var parts = selectedDate.Split('/');
+        //        if (parts.Length != 3)
+        //        {
+        //            ViewBag.ErrorMessage = "فرمت تاریخ نادرست است.";
+        //            return View();
+        //        }
+
+        //        int year = int.Parse(parts[0]);
+        //        int month = int.Parse(parts[1]);
+        //        int day = int.Parse(parts[2]);
+
+        //        var selectedMiladiDate = persianCalendar.ToDateTime(year, month, day, 0, 0, 0, 0);
+        //        var nextDay = selectedMiladiDate.AddDays(1);
+
+        //        var archives = _context.TBLCheckItemArchives
+        //            .Where(x => x.CreatedAt >= selectedMiladiDate && x.CreatedAt < nextDay)
+        //            .OrderBy(x => x.CreatedAt)
+        //            .ToList();
+
+        //        if (!archives.Any())
+        //        {
+        //            ViewBag.NoData = "برای تاریخ انتخاب‌شده داده‌ای در بایگانی موجود نیست.";
+        //        }
+
+        //        ViewBag.SelectedDate = selectedDate;
+        //        return View(archives);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        ViewBag.ErrorMessage = "خطا در پردازش تاریخ: " + ex.Message;
+        //        return View();
+        //    }
+        //}
+
         [HttpPost]
         public IActionResult ArchiveIndex(string selectedDate)
         {
-            if (string.IsNullOrEmpty(selectedDate))
+            if (string.IsNullOrWhiteSpace(selectedDate))
             {
                 ViewBag.ErrorMessage = "لطفاً یک تاریخ انتخاب کنید.";
-                return View();
+                return View(new List<TBL_CheckItemArchive>());
             }
 
             try
             {
-                // تبدیل ارقام فارسی به انگلیسی
+                // تبدیل اعداد فارسی به انگلیسی
                 selectedDate = ConvertPersianToEnglishNumbers(selectedDate);
 
-                var persianCalendar = new System.Globalization.PersianCalendar();
+                // پارس کردن تاریخ شمسی
                 var parts = selectedDate.Split('/');
-                if (parts.Length != 3)
+                if (parts.Length != 3 ||
+                    !int.TryParse(parts[0], out int year) ||
+                    !int.TryParse(parts[1], out int month) ||
+                    !int.TryParse(parts[2], out int day))
                 {
                     ViewBag.ErrorMessage = "فرمت تاریخ نادرست است.";
-                    return View();
+                    return View(new List<TBL_CheckItemArchive>());
                 }
 
-                int year = int.Parse(parts[0]);
-                int month = int.Parse(parts[1]);
-                int day = int.Parse(parts[2]);
-
+                var persianCalendar = new System.Globalization.PersianCalendar();
                 var selectedMiladiDate = persianCalendar.ToDateTime(year, month, day, 0, 0, 0, 0);
                 var nextDay = selectedMiladiDate.AddDays(1);
 
+                // بازیابی اطلاعات آرشیو
                 var archives = _context.TBLCheckItemArchives
                     .Where(x => x.CreatedAt >= selectedMiladiDate && x.CreatedAt < nextDay)
                     .OrderBy(x => x.CreatedAt)
@@ -264,9 +314,10 @@ namespace ITCheckList.Controllers
             catch (Exception ex)
             {
                 ViewBag.ErrorMessage = "خطا در پردازش تاریخ: " + ex.Message;
-                return View();
+                return View(new List<TBL_CheckItemArchive>());
             }
         }
+
 
         private string ConvertPersianToEnglishNumbers(string input)
         {
