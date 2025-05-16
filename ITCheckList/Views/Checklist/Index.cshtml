@@ -148,8 +148,6 @@
                     "info": "نمایش _START_ تا _END_ از _TOTAL_ رکورد",
                     "infoEmpty": "نمایش 0 تا 0 از 0 رکورد",
                     "infoFiltered": "(فیلتر شده از _MAX_ رکورد)",
-                    "infoPostFix": "",
-                    "thousands": ",",
                     "lengthMenu": "نمایش _MENU_ رکورد",
                     "loadingRecords": "در حال بارگذاری...",
                     "processing": "در حال پردازش...",
@@ -173,12 +171,7 @@
     <script>
         document.getElementById("btnPrintTable")?.addEventListener("click", function () {
             fetch('/Checklist/IsCheckItemTableEmpty')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error("خطا در دریافت وضعیت جدول");
-                    }
-                    return response.json();
-                })
+                .then(res => res.ok ? res.json() : Promise.reject("خطا در دریافت وضعیت جدول"))
                 .then(data => {
                     if (data.isEmpty) {
                         Swal.fire({
@@ -186,20 +179,17 @@
                             title: 'جدول خالی است!',
                             html: '<div style="direction: rtl;">هیچ داده‌ای برای چاپ موجود نیست.</div>',
                             confirmButtonText: 'باشه',
-                            customClass: {
-                                popup: 'swal2-rtl'
-                            }
+                            customClass: { popup: 'swal2-rtl' }
                         });
                     } else {
-                        // فقط اگر جدول خالی نبود، چاپ اجرا شود
                         printFullTable();
                     }
                 })
-                .catch(error => {
+                .catch(err => {
                     Swal.fire({
                         icon: 'error',
                         title: 'خطا!',
-                        html: `<div style="direction: rtl;">${error.message}</div>`,
+                        html: `<div style="direction: rtl;">${err}</div>`,
                         confirmButtonText: 'باشه'
                     });
                 });
@@ -209,10 +199,7 @@
     <script>
         document.getElementById("btnArchiveToday")?.addEventListener("click", function () {
             fetch('/Checklist/IsCheckItemTableEmpty')
-                .then(response => {
-                    if (!response.ok) throw new Error('خطا در بررسی وضعیت جدول.');
-                    return response.json();
-                })
+                .then(res => res.ok ? res.json() : Promise.reject('خطا در بررسی وضعیت جدول.'))
                 .then(data => {
                     if (data.isEmpty) {
                         Swal.fire({
@@ -222,30 +209,25 @@
                             confirmButtonText: 'متوجه شدم'
                         });
                     } else {
-                        // بررسی وضعیت آیتم‌ها (آیا همه انجام شده‌اند؟)
                         fetch('/Checklist/HasPendingItems')
-                            .then(response => response.json())
-                            .then(pendingData => {
-                                if (pendingData.hasPending) {
+                            .then(res => res.json())
+                            .then(pending => {
+                                if (pending.hasPending) {
                                     Swal.fire({
                                         icon: 'warning',
                                         title: 'عدم امکان بایگانی!',
                                         html: `
                                             <div style="direction: rtl; text-align: right; font-size: 15px; line-height: 2;">
-                                                در حال حاضر برخی از موارد در جدول "کارهای امروز" دارای وضعیت "در دست بررسی" یا "در حال اقدام" هستند.
-                                                <br> لطفاً پیش از بایگانی، تمام موارد را به وضعیت "انجام شد" تغییر دهید.
-                                            </div>
-                                        `,
+                                                برخی موارد در وضعیت "در حال اقدام" یا "در دست بررسی" هستند.
+                                                <br>ابتدا همه را به وضعیت "انجام شد" تغییر دهید.
+                                            </div>`,
                                         confirmButtonText: 'متوجه شدم',
-                                        customClass: {
-                                            popup: 'swal-wide'  // کلاس سفارشی برای عرض بیشتر
-                                        }
+                                        customClass: { popup: 'swal-wide' }
                                     });
                                 } else {
-                                    // نمایش پیام تأیید برای بایگانی
                                     Swal.fire({
                                         title: 'پاک‌سازی پس از بایگانی؟',
-                                        html: '<div style="direction: rtl;">آیا مایلید پس از بایگانی، اطلاعات پاک‌سازی شوند؟<br>این کار قابل بازگشت نیست.</div>',
+                                        html: '<div style="direction: rtl;">آیا پس از بایگانی، اطلاعات پاک شوند؟</div>',
                                         icon: 'question',
                                         showDenyButton: true,
                                         showCancelButton: true,
@@ -259,55 +241,45 @@
                                             cancelButton: 'btn btn-light border'
                                         },
                                         buttonsStyling: false
-                                    }).then((result) => {
-                                        if (result.isConfirmed) {
-                                            archiveToday(true);
-                                        } else if (result.isDenied) {
-                                            archiveToday(false);
-                                        }
+                                    }).then(result => {
+                                        if (result.isConfirmed) archiveToday(true);
+                                        else if (result.isDenied) archiveToday(false);
                                     });
                                 }
                             });
                     }
                 })
-                .catch(error => {
+                .catch(err => {
                     Swal.fire({
                         icon: 'error',
                         title: 'خطا!',
-                        html: `<div style="direction: rtl;">${error.message}</div>`,
+                        html: `<div style="direction: rtl;">${err}</div>`,
                         confirmButtonText: 'باشه'
                     });
                 });
         });
     </script>
+
     <!--=================================================================-->
     <script>
-            function archiveToday(deleteAfter) {
+        function archiveToday(deleteAfter) {
             fetch(`/Checklist/ArchiveToday?deleteAfterArchive=${deleteAfter}`, {
                 method: 'POST'
             })
-            .then(response => {
-                if (!response.ok) {
-                    return response.text().then(text => { throw new Error(text); });
-                }
-                return response.text();
-            })
-            .then(message => {
+            .then(res => res.ok ? res.text() : res.text().then(text => Promise.reject(text)))
+            .then(msg => {
                 Swal.fire({
                     icon: 'success',
                     title: 'موفق!',
-                    html: `<div style="direction: rtl;">${message}</div>`,
+                    html: `<div style="direction: rtl;">${msg}</div>`,
                     confirmButtonText: 'باشه'
-                }).then(() => {
-                    // صفحه را رفرش کن یا جدول را ری‌لود کن
-                    location.reload();
-                });
+                }).then(() => location.reload());
             })
-            .catch(error => {
+            .catch(err => {
                 Swal.fire({
                     icon: 'error',
                     title: 'خطا!',
-                    html: `<div style="direction: rtl;">${error.message}</div>`,
+                    html: `<div style="direction: rtl;">${err}</div>`,
                     confirmButtonText: 'متوجه شدم'
                 });
             });
@@ -316,16 +288,14 @@
     <!--=================================================================-->
     <script>
         $(document).ready(function () {
-            // بررسی اینکه پیامی از TempData ارسال شده باشد
             var successMessage = '@TempData["SuccessMessage"]';
             if (successMessage) {
-                // نمایش پیام ToastNotify با Toastr و رنگ سفارشی
                 toastr.success(successMessage, 'عملیات موفقیت‌آمیز', {
                     timeOut: 1800,
-                    closeButton: true,  // نمایش دکمه بستن
-                    progressBar: true,  // نمایش نوار پیشرفت
-                    positionClass: 'toast-top-center', // موقعیت نمایش
-                    toastClass: 'custom-toast-success'  // اضافه کردن کلاس سفارشی
+                    closeButton: true,
+                    progressBar: true,
+                    positionClass: 'toast-top-center',
+                    toastClass: 'custom-toast-success'
                 });
             }
         });
@@ -334,71 +304,35 @@
     <!--تبدیل تاریخ میلادی به شمسی-->
     <script>
         function toShamsi(gDate) {
-            const g_y = gDate.getFullYear();
-            const g_m = gDate.getMonth() + 1;
-            const g_d = gDate.getDate();
-
+            const g_y = gDate.getFullYear(), g_m = gDate.getMonth() + 1, g_d = gDate.getDate();
             const g_days_in_month = [31,28,31,30,31,30,31,31,30,31,30,31];
             const j_days_in_month = [31,31,31,31,31,31,30,30,30,30,30,29];
+            const div = (a, b) => Math.floor(a / b);
 
-            function div(a,b) {
-                return Math.floor(a/b);
-            }
-
-            let gy = g_y - 1600;
-            let gm = g_m - 1;
-            let gd = g_d - 1;
-
-            let g_day_no = 365*gy + div((gy+3),4) - div((gy+99),100) + div((gy+399),400);
-
-            for (let i=0; i < gm; ++i)
-                g_day_no += g_days_in_month[i];
-            if (gm>1 && ((gy%4==0 && gy%100!=0) || (gy%400==0)))
-                ++g_day_no;
+            let gy = g_y - 1600, gm = g_m - 1, gd = g_d - 1;
+            let g_day_no = 365 * gy + div((gy + 3), 4) - div((gy + 99), 100) + div((gy + 399), 400);
+            for (let i = 0; i < gm; ++i) g_day_no += g_days_in_month[i];
+            if (gm > 1 && ((gy % 4 == 0 && gy % 100 != 0) || (gy % 400 == 0))) ++g_day_no;
             g_day_no += gd;
 
             let j_day_no = g_day_no - 79;
-
-            let j_np = div(j_day_no, 12053);
-            j_day_no %= 12053;
-
-            let jy = 979 + 33*j_np + 4*div(j_day_no,1461);
-            j_day_no %= 1461;
-
+            let j_np = div(j_day_no, 12053); j_day_no %= 12053;
+            let jy = 979 + 33 * j_np + 4 * div(j_day_no, 1461); j_day_no %= 1461;
             if (j_day_no >= 366) {
-                jy += div((j_day_no-1),365);
-                j_day_no = (j_day_no-1)%365;
+                jy += div((j_day_no - 1), 365);
+                j_day_no = (j_day_no - 1) % 365;
             }
 
-            let jm, jd, i;
-            for (i=0; i < 11 && j_day_no >= j_days_in_month[i]; ++i) {
-                j_day_no -= j_days_in_month[i];
-            }
-            jm = i + 1;
-            jd = j_day_no + 1;
+            let jm, jd;
+            for (var i = 0; i < 11 && j_day_no >= j_days_in_month[i]; ++i) j_day_no -= j_days_in_month[i];
+            jm = i + 1; jd = j_day_no + 1;
 
-            return {
-                year: jy,
-                month: jm.toString().padStart(2, '0'),
-                day: jd.toString().padStart(2, '0')
-            };
+            return { year: jy, month: jm.toString().padStart(2, '0'), day: jd.toString().padStart(2, '0') };
         }
-        // روزهای هفته به فارسی
-        const weekDays = [
-            "یک‌شنبه",
-            "دوشنبه",
-            "سه‌شنبه",
-            "چهارشنبه",
-            "پنج‌شنبه",
-            "جمعه",
-            "شنبه"
-        ];
-        // درج تاریخ در span
+        const weekDays = ["یک‌شنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه", "پنج‌شنبه", "جمعه", "شنبه"];
         document.addEventListener("DOMContentLoaded", function () {
-            const today = new Date();
-            const shamsi = toShamsi(today);
-            const weekDay = weekDays[today.getDay()];
-            const formattedDate = `${weekDay} ${shamsi.year}/${shamsi.month}/${shamsi.day}`;
+            const today = new Date(), shamsi = toShamsi(today);
+            const formattedDate = `${weekDays[today.getDay()]} ${shamsi.year}/${shamsi.month}/${shamsi.day}`;
             document.getElementById("shamsiDate").innerText = formattedDate;
         });
     </script>
@@ -422,9 +356,7 @@
                     success: function (result) {
                         if (result.success) {
                             $('#modalForm').modal('hide');
-                            Swal.fire("موفق!", result.message, "success").then(() => {
-                                location.reload();
-                            });
+                            Swal.fire("موفق!", result.message, "success").then(() => location.reload());
                         } else {
                             Swal.fire("خطا", result.message, "error");
                         }
@@ -437,7 +369,6 @@
     <!--ویرایش آیتم با تأیید SweetAlert-->
     <script>
         $(document).ready(function () {
-            // نمایش فرم ویرایش
             $(document).on("click", ".btn-edit", function () {
                 const id = $(this).data("id");
                 $.get("/Checklist/Edit/" + id, function (data) {
@@ -446,26 +377,25 @@
                 });
             });
 
-        $(document).on("submit", "#editChecklistForm", function (e) {
-            e.preventDefault();
-            var formData = $(this).serialize();  // جمع‌آوری داده‌های فرم
-            $.ajax({
-                url: "/Checklist/Edit",  // آدرس درخواست
-                type: "POST",
-                data: formData,  // ارسال داده‌ها
-                success: function (res) {
-                    if (res.success) {
-                        $("#modalForm").modal("hide");  // بستن مودال پس از موفقیت
-                        Swal.fire("ویرایش شد!", res.message, "success").then(() => location.reload());
-                    } else {
-                        Swal.fire("خطا", res.message, "error");
+            $(document).on("submit", "#editChecklistForm", function (e) {
+                e.preventDefault();
+                $.ajax({
+                    url: "/Checklist/Edit",
+                    type: "POST",
+                    data: $(this).serialize(),
+                    success: function (res) {
+                        if (res.success) {
+                            $("#modalForm").modal("hide");
+                            Swal.fire("ویرایش شد!", res.message, "success").then(() => location.reload());
+                        } else {
+                            Swal.fire("خطا", res.message, "error");
+                        }
+                    },
+                    error: function () {
+                        Swal.fire("خطا", "خطا در ارسال درخواست!", "error");
                     }
-                },
-                error: function () {
-                    Swal.fire("خطا", "خطا در ارسال درخواست!", "error");
-                }
+                });
             });
-        });
         });
     </script>
     <!--=================================================================-->

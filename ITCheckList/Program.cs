@@ -10,6 +10,11 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("StrConDb")));
 
+// در متد ConfigureServices یا قبل از Build
+builder.Services.AddMemoryCache();         // فعال کردن In-Memory Cache
+builder.Services.AddResponseCaching();     // فعال کردن Response Caching
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

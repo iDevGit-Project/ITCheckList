@@ -2,6 +2,7 @@
 using ITCheckList.Models.Context;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using System.Globalization;
 
 namespace ITCheckList.Controllers
@@ -9,17 +10,31 @@ namespace ITCheckList.Controllers
     public class ChecklistController : Controller
     {
         private readonly AppDbContext _context;
+        private readonly IMemoryCache _cache;
 
-        public ChecklistController(AppDbContext context)
+        private const string CacheKey = "ChecklistItemsCache";
+
+        public ChecklistController(AppDbContext context, IMemoryCache cache)
         {
             _context = context;
+            _cache = cache;
         }
 
         public IActionResult Index()
         {
-            var items = _context.TBLCheckItems.OrderByDescending(c => c.CreatedAt).ToList();
+            if (!_cache.TryGetValue(CacheKey, out List<TBL_CheckItem> items))
+            {
+                items = _context.TBLCheckItems.OrderByDescending(c => c.CreatedAt).ToList();
+
+                var cacheOptions = new MemoryCacheEntryOptions()
+                    .SetSlidingExpiration(TimeSpan.FromMinutes(5));
+
+                _cache.Set(CacheKey, items, cacheOptions);
+            }
+
             return View(items);
         }
+
         #region عملیات ثبت بررسی جدید
         [HttpGet]
         public IActionResult Create()
@@ -30,20 +45,52 @@ namespace ITCheckList.Controllers
         [HttpPost]
         public IActionResult Create(TBL_CheckItem item)
         {
-            if (ModelState.IsValid)
+            if (item == null)
             {
-                _context.TBLCheckItems.Add(item);
-                _context.SaveChanges();
-                return Json(new { success = true, message = "ثبت با موفقیت انجام شد." });
+                return Json(new { success = false, message = "اطلاعات ارسالی نامعتبر است." });
             }
 
-            var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
-            return Json(new { success = false, message = string.Join(" - ", errors) });
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                return Json(new { success = false, message = string.Join(" - ", errors) });
+            }
+
+            _context.TBLCheckItems.Add(item);
+            _context.SaveChanges();
+
+            // حذف کش بعد از افزودن آیتم جدید
+            _cache.Remove(CacheKey);
+
+            return Json(new { success = true, message = "ثبت با موفقیت انجام شد." });
         }
+
+        //[HttpGet]
+        //public IActionResult Create()
+        //{
+        //    return PartialView("_Create", new TBL_CheckItem());
+        //}
+
+        //[HttpPost]
+        //public IActionResult Create(TBL_CheckItem item)
+        //{
+        //    if (ModelState.IsValid)
+        //    {
+        //        _context.TBLCheckItems.Add(item);
+        //        _context.SaveChanges();
+
+        //        // حذف کش بعد از افزودن
+        //        _cache.Remove(CacheKey);
+
+        //        return Json(new { success = true, message = "ثبت با موفقیت انجام شد." });
+        //    }
+
+        //    var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+        //    return Json(new { success = false, message = string.Join(" - ", errors) });
+        //}
         #endregion
 
         #region عملیات ویرایش بررسی های جاری
-        // GET: Checklist/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -60,7 +107,6 @@ namespace ITCheckList.Controllers
             return View(item);
         }
 
-        // POST: Checklist/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, TBL_CheckItem model)
@@ -77,7 +123,9 @@ namespace ITCheckList.Controllers
                     _context.Update(model);
                     await _context.SaveChangesAsync();
 
-                    // ارسال پیام موفقیت به صفحه با استفاده از TempData
+                    // حذف کش بعد از ویرایش
+                    _cache.Remove(CacheKey);
+
                     TempData["SuccessMessage"] = "اطلاعات با موفقیت ویرایش شد.";
 
                     return RedirectToAction(nameof(Index));
@@ -100,18 +148,20 @@ namespace ITCheckList.Controllers
 
         #region عملیات حذف بررسی های جاری
         [HttpPost]
-        public JsonResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var item = _context.TBLCheckItems.Find(id);
+            var item = await _context.TBLCheckItems.FindAsync(id);
             if (item == null)
                 return Json(new { success = false, message = "مورد یافت نشد." });
 
             _context.TBLCheckItems.Remove(item);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();  // حتماً باید باشه
+
+            // حذف کش بعد از حذف
+            _cache.Remove(CacheKey);
 
             return Json(new { success = true, message = "آیتم با موفقیت حذف شد." });
         }
-
         #endregion
 
         #region متد های مربوط به عملیات آرشیو کردن اطلاعات
@@ -122,7 +172,6 @@ namespace ITCheckList.Controllers
             {
                 var today = DateTime.Today;
 
-                // دریافت آیتم‌های امروز با وضعیت تایید شده
                 var todayItems = await _context.TBLCheckItems
                     .Where(x => x.CreatedAt.Date == today && x.Status == true)
                     .ToListAsync();
@@ -132,12 +181,10 @@ namespace ITCheckList.Controllers
                     return BadRequest("موردی برای بایگانی یافت نشد.");
                 }
 
-                // دریافت آرشیوهای امروز برای بررسی تکراری بودن
                 var archivedItemsToday = await _context.TBLCheckItemArchives
                     .Where(x => x.CreatedAt.Date == today)
                     .ToListAsync();
 
-                // فیلتر کردن آیتم‌هایی که هنوز آرشیو نشده‌اند
                 var itemsToArchive = todayItems
                     .Where(item => !archivedItemsToday.Any(a =>
                         a.Section == item.Section &&
@@ -151,7 +198,6 @@ namespace ITCheckList.Controllers
                     return BadRequest("تمام موارد امروز قبلاً در بایگانی ثبت شده‌اند.");
                 }
 
-                // تبدیل به مدل آرشیو
                 var archiveItems = itemsToArchive.Select(x => new TBL_CheckItemArchive
                 {
                     Section = x.Section,
@@ -161,16 +207,17 @@ namespace ITCheckList.Controllers
                     Status = x.Status
                 }).ToList();
 
-                // ذخیره در جدول آرشیو
                 await _context.TBLCheckItemArchives.AddRangeAsync(archiveItems);
 
-                // در صورت نیاز، حذف از جدول اصلی با موجودیت واقعی
                 if (deleteAfterArchive)
                 {
                     _context.TBLCheckItems.RemoveRange(itemsToArchive);
                 }
 
                 await _context.SaveChangesAsync();
+
+                // حذف کش بعد از آرشیو (که احتمالا داده‌ها تغییر کرده‌اند)
+                _cache.Remove(CacheKey);
 
                 return Ok("بایگانی با موفقیت انجام شد.");
             }
@@ -179,7 +226,6 @@ namespace ITCheckList.Controllers
                 return StatusCode(500, "خطا در بایگانی: " + ex.Message);
             }
         }
-
 
         [HttpGet]
         public async Task<JsonResult> CheckPreviousDayData()
@@ -196,7 +242,7 @@ namespace ITCheckList.Controllers
         public async Task<IActionResult> HasPendingItems()
         {
             var hasPending = await _context.TBLCheckItems
-                .AnyAsync(x => x.Status == false); // یعنی هنوز "انجام نشده"
+                .AnyAsync(x => x.Status == false);
 
             return Json(new { hasPending });
         }
@@ -212,7 +258,6 @@ namespace ITCheckList.Controllers
         #endregion
 
         #region عملیات مربوط به دریافت گزارش از جدول بایگانی
-        // GET: نمایش صفحه انتخاب تاریخ
         public IActionResult ArchiveIndex()
         {
             return View();
@@ -229,10 +274,8 @@ namespace ITCheckList.Controllers
 
             try
             {
-                // تبدیل اعداد فارسی به انگلیسی
                 selectedDate = ConvertPersianToEnglishNumbers(selectedDate);
 
-                // پارس کردن تاریخ شمسی
                 var parts = selectedDate.Split('/');
                 if (parts.Length != 3 ||
                     !int.TryParse(parts[0], out int year) ||
@@ -247,7 +290,6 @@ namespace ITCheckList.Controllers
                 var selectedMiladiDate = persianCalendar.ToDateTime(year, month, day, 0, 0, 0, 0);
                 var nextDay = selectedMiladiDate.AddDays(1);
 
-                // بازیابی اطلاعات آرشیو
                 var archives = _context.TBLCheckItemArchives
                     .Where(x => x.CreatedAt >= selectedMiladiDate && x.CreatedAt < nextDay)
                     .OrderBy(x => x.CreatedAt)
@@ -282,7 +324,6 @@ namespace ITCheckList.Controllers
 
             return input;
         }
-
         #endregion
     }
 }
