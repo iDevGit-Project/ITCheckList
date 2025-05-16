@@ -1,18 +1,23 @@
 ﻿@model List<TBL_CheckItemArchive>
 @{
     ViewData["Title"] = "گزارش بایگانی بر اساس تاریخ";
-    Layout = "~/Views/Shared/_Layout.cshtml"; // اگر از Layout استفاده می‌کنی
-
-    <!-- فایل CSS شما که فونت رو override می‌کنه -->
+    Layout = "~/Views/Shared/_Layout.cshtml";
     <link href="~/css/site.css" rel="stylesheet" />
 }
 <!--=================================================================-->
-<h2 class="text-center mt-3">گزارش بایگانی بر اساس تاریخ </h2>
 
-<form method="post" asp-action="ArchiveIndex" class="text-center mt-4">
-    <input type="text" id="selectedDate" name="selectedDate" placeholder="تاریخ را انتخاب کنید" class="form-control d-inline-block w-auto" autocomplete="off"  />
-    <button type="submit" class="btn btn-primary">نمایش گزارش</button>
-</form>
+<h2 class="text-center mt-3">گزارش بایگانی بر اساس تاریخ</h2>
+<h5 class="text-center mt-3">.جهت نمایش اطلاعات، تاریخ خورد را از ورودی زیر انتخاب نمایید</h5>
+<div class="d-flex justify-content-center mt-4">
+    <form method="post" asp-action="ArchiveIndex" data-loading="true" class="d-flex align-items-center gap-2 flex-wrap flex-sm-nowrap">
+        <input type="text" id="selectedDate" name="selectedDate"
+               placeholder="تاریخ را انتخاب کنید"
+               class="form-control w-auto text-center"
+               autocomplete="off" />
+        <button type="submit" class="btn btn-outline-primary custom-btn">نمایش گزارش</button>
+    </form>
+</div>
+
 
 @if (ViewBag.ErrorMessage != null)
 {
@@ -52,26 +57,25 @@
         </tbody>
     </table>
 }
+
 <!-- دکمه دریافت خروجی -->
 <div class="text-center mt-3">
-    <!-- دکمه درج در بایگانی امروز -->
     <button class="btn custom-btn btn-outline-primary" onclick="printArchiveReport()">دریافت خروجی از اطلاعات</button>
 </div>
+
 <!--=================================================================-->
 @section ITCheckListArciveView {
-    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/persian-date/dist/persian-date.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
-    <!-- کتابخانه print.js از CDN -->
+    <!-- کتابخانه‌ها -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" asp-append-version="true"></script>
+    <script src="https://cdn.jsdelivr.net/npm/persian-date/dist/persian-date.min.js" asp-append-version="true"></script>
+    <script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js" asp-append-version="true"></script>
     <link href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css" rel="stylesheet" />
-    <!-- SweetAlert2 -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-    <!-- PrintJS -->
-    <script src="https://printjs-4de6.kxcdn.com/print.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" asp-append-version="true"></script>
+    <script src="https://printjs-4de6.kxcdn.com/print.min.js" asp-append-version="true"></script>
     <link rel="stylesheet" href="https://printjs-4de6.kxcdn.com/print.min.css">
-    <script src="~/lib/printArchiveReport.js"></script>
-    <!--=================================================================-->
+    <script src="~/lib/printArchiveReport.js" asp-append-version="true"></script>
+    <script src="~/lib/data-loading.js" asp-append-version="true"></script>
+    <!-- تقویم شمسی و بارگذاری Overlay -->
     <script>
         $(document).ready(function () {
             $("#selectedDate").persianDatepicker({
@@ -79,17 +83,50 @@
                 autoClose: true,
                 initialValue: false
             });
-        });
-    </script>
-    <script>
-        $(document).ready(function () {
-            // مقداردهی مجدد input تاریخ از ViewBag
+
             var selectedDate = '@ViewBag.SelectedDate';
             if (selectedDate) {
                 $('#selectedDate').val(selectedDate);
             }
+
+            // نمایش Overlay هنگام ارسال فرم
+            $("form").on("submit", function () {
+                $("#loadingOverlay").fadeIn();
+            });
         });
     </script>
-
-    <!--=================================================================-->
+    <script>
+        function showOverlay(delay = 1250) {
+            return new Promise(resolve => {
+                const overlay = document.getElementById('globalOverlay');
+                overlay.style.display = 'flex';
+                setTimeout(() => resolve(), delay); // صبر کن بعد عملیات اصلی اجرا بشه
+            });
+        }
+        function hideOverlay() {
+            const overlay = document.getElementById('globalOverlay');
+            overlay.style.display = 'none';
+        }
+        // اجرا برای همه فرم‌ها
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('[data-loading="true"]').forEach(el => {
+                if (el.tagName === 'FORM') {
+                    el.addEventListener('submit', async function (e) {
+                        await showOverlay();
+                    });
+                } else {
+                    el.addEventListener('click', async function (e) {
+                        if (!el.hasAttribute('data-manual')) {
+                            e.preventDefault(); // جلوی اجرا رو بگیر
+                            await showOverlay();
+                            const href = el.getAttribute('href');
+                            const formAction = el.getAttribute('formaction');
+                            if (href) window.location.href = href;
+                            else if (formAction) el.closest('form').submit();
+                        }
+                    });
+                }
+            });
+        });
+    </script>
 }

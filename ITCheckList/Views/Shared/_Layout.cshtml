@@ -9,53 +9,75 @@
     <link rel="stylesheet" href="~/ITCheckList.styles.css" asp-append-version="true" />
     <!-- اضافه کردن استایل Toastr -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css" rel="stylesheet" />
-
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">تسک های روزانه</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark fw-bold" asp-controller="Checklist" asp-action="Index">مدیریت اطلاعات</a>
+    <header dir="rtl">
+        <nav class="navbar navbar-expand-sm navbar-light bg-light text-dark border-bottom box-shadow mb-3" dir="rtl">
+            <div class="container d-flex justify-content-between align-items-center">
+                <!-- منوی سمت راست (برند و لینک‌ها) -->
+                <div class="d-flex align-items-center nav-animated-container">
+                    <a class="navbar-brand fw-bold ms-3 nav-animated" asp-area="" asp-controller="Home" asp-action="Index">
+                        مدیریت تسک‌های روزانه
+                    </a>
+                    <ul class="navbar-nav flex-row">
+                        <li class="nav-item me-3">
+                            <a class="nav-link text-dark fw-bold nav-animated" asp-controller="Checklist" asp-action="Index">
+                                مدیریت اطلاعات
+                            </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark fw-bold" asp-controller="Checklist" asp-action="ArchiveIndex">آرشیو اطلاعات</a>
+                        <li class="nav-item me-3">
+                            <a class="nav-link text-dark fw-bold nav-animated" asp-controller="Checklist" asp-action="ArchiveIndex">
+                                آرشیو اطلاعات
+                            </a>
                         </li>
                     </ul>
+                </div>
+                <!-- تاریخ و ساعت در سمت چپ -->
+                <div class="text-start">
+                    <div id="dateText" class="fw-bold text-black" style="font-size: 14px;"></div>
+                    @* <div id="timeText" class="text-black" style="font-size: 13px;"></div> *@
                 </div>
             </div>
         </nav>
     </header>
+
     <div class="container">
         <main role="main" class="pb-3">
+            <!-- Overlay و Spinner لودینگ مشترک -->
+            <div id="globalOverlay" class="overlay-loading" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color: rgba(255,255,255,0.7); z-index:9999; text-align:center;">
+                <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%);">
+                    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                        <span class="visually-hidden">...در حال بارگذاری</span>
+                    </div>
+                    <div class="mt-3">.در حال بررسی اطلاعات، لطفاً منتظر بمانید</div>
+                </div>
+            </div>
+
             @RenderBody()
         </main>
     </div>
-
-    <footer class="border-top footer text-muted">
+    <!--=================================================================-->
+    <footer class="border-top footer bg-primary-custome text-white" dir="rtl">
         <div class="container">
             بازرگانی، پزشکی دکتر متقی- 1404 - 2025
         </div>
     </footer>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <!--=================================================================-->
+    <script src="~/lib/jquery/dist/jquery.min.js" asp-append-version="true"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js" asp-append-version="true"></script>
+    <!--=================================================================-->
+    <script src="~/lib/showdatetimefa.js" asp-append-version="true"></script>
+    <!--=================================================================-->
 
     <!-- اضافه کردن جاوااسکریپت Toastr -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" asp-append-version="true"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js" asp-append-version="true"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/lib/data-loading.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
     @await RenderSectionAsync("ITCheckListIndex", false)
     @await RenderSectionAsync("ITCheckListPrint", false)
     @await RenderSectionAsync("ITCheckListArciveView", false)
     @await RenderSectionAsync("ValidationAddCheckListForm", false)
-    
 </body>
 </html>

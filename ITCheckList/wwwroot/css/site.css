@@ -1,32 +1,29 @@
 ﻿@font-face {
     font-family: 'IRANYekanXFaNum-Regular';
-    src: 
-        url('/fonts/IRANYekanXFaNum-Regular.woff2') format('woff2'), 
-        url('/fonts/IRANYekanXFaNum-Regular.woff') format('woff'), 
-        url('/fonts/IRANYekanXFaNum-Regular.ttf') format('truetype');
+    src: url('/fonts/IRANYekanXFaNum-Regular.woff2') format('woff2'), url('/fonts/IRANYekanXFaNum-Regular.woff') format('woff'), url('/fonts/IRANYekanXFaNum-Regular.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
 }
 
 html {
     font-size: 14px;
-    font-family: 'IRANYekanXFaNum-Regular';
+    font-family: 'IRANYekanXFaNum-Regular' !important;
 }
 
 @media (min-width: 768px) {
     html {
         font-size: 14px;
-        font-family: 'IRANYekanXFaNum-Regular';
+        font-family: 'IRANYekanXFaNum-Regular' !important;
     }
 }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
 html {
-  position: relative;
-  min-height: 100%;
+    position: relative;
+    min-height: 100%;
 }
 
 body {
@@ -76,6 +73,7 @@ body {
             border-bottom: none;
         }
 }
+
 .btn {
     border: none; /* حذف border */
     border-radius: 5px; /* اضافه کردن گوشه‌های گرد به دکمه */
@@ -130,16 +128,17 @@ body {
     transition: background-color 0.3s ease, transform 0.3s ease; /* اضافه کردن افکت‌های انتقال */
 }
 
-.custom-btn-success:hover {
-    background-color: #00B89B; /* تغییر پس‌زمینه در حالت hover */
-    transform: translateY(-2px); /* بالا بردن دکمه در حالت hover */
-    box-shadow: 0 6px 10px rgba(0, 123, 255, 0.3); /* افزایش سایه در حالت hover */
-    cursor: pointer; /* تغییر موس به pointer */
-}
+    .custom-btn-success:hover {
+        background-color: #00B89B; /* تغییر پس‌زمینه در حالت hover */
+        transform: translateY(-2px); /* بالا بردن دکمه در حالت hover */
+        box-shadow: 0 6px 10px rgba(0, 123, 255, 0.3); /* افزایش سایه در حالت hover */
+        cursor: pointer; /* تغییر موس به pointer */
+    }
 
     .custom-btn-success:focus {
         outline: none; /* حذف outline */
     }
+
 .custom-toast-success {
     background-color: #00B89B !important; /* رنگ پس‌زمینه */
     color: white !important; /* رنگ متن */
@@ -196,22 +195,29 @@ body {
     box-shadow: none !important;
     outline: none !important;
 }
+
 .swal-wide {
     width: 600px !important; /* عرض بیشتر برای جلوگیری از به‌هم‌ریختگی */
 }
+
 .done-row {
-    background-color: #00b89b14 !important;
+    background-color: #f6fbff !important;
 }
+
 .status-done {
-    color: #00a188;
-    /* background-color: #f0fff9; */
+    background-color: #d9efee; /* سبز ملایم */
+    color: #00796b; /* سبز تیره */
     font-weight: bold;
+    text-align: center;
+    font-size: 14px;
 }
 
 .status-pending {
-    color: #D80016;
-    /* background-color: #ffe9eb; */
+    background-color: #fff3cd; /* زرد روشن */
+    color: #856404; /* زرد تیره */
     font-weight: bold;
+    text-align: center;
+    font-size: 14px;
 }
 
 /* اعمال فونت سفارشی به ورودی تقویم */
@@ -236,7 +242,205 @@ body {
 .pwt-cal-footer {
     font-family: 'IRANYekanXFaNum-Regular' !important;
     font-size: 14px !important;
-    direction: rtl !important;
     text-align: center !important;
 }
 
+/* در فایل site.css یا layout.css */
+.overlay-loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.4); /* شفاف */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    backdrop-filter: blur(4px);
+}
+
+.spinner {
+    border: 6px solid #f3f3f3;
+    border-top: 6px solid #007bff;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* متن متحرک */
+.loading-text {
+    margin-top: 15px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+    animation: blink 1.5s infinite;
+}
+
+@keyframes blink {
+    0%, 100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.4;
+    }
+}
+
+.dataTables_wrapper {
+    font-family: 'IRANYekanXFaNum-Regular' !important;
+    font-size: 14px;
+}
+
+table.dataTable {
+    border: 1px solid #dee2e6;
+    width: 100% !important;
+}
+
+    table.dataTable th,
+    table.dataTable td {
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    table.dataTable thead {
+        text-align: center;
+        vertical-align: middle;
+        background-color: #f1f5f9;
+        font-weight: bold;
+    }
+
+.dataTables_filter input {
+    border-radius: 5px;
+    padding: 5px 10px;
+    border: 1px solid #ced4da;
+}
+
+.dataTables_length select {
+    border-radius: 5px;
+    border: 1px solid #ced4da;
+}
+
+table.dataTable tbody tr {
+    opacity: 0;
+    transform: translateY(10px);
+    animation: fadeInUp 0.3s ease forwards;
+}
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+/* تنظیم کلی دکمه‌ها و ورودی‌های بالا به صورت Flex و راست‌چین */
+div.dataTables_wrapper div.dataTables_length,
+div.dataTables_wrapper div.dataTables_filter {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+/* چینش به سمت راست (در زبان فارسی) */
+div.dataTables_wrapper div.dataTables_length {
+    justify-content: flex-start;
+}
+
+div.dataTables_wrapper div.dataTables_filter {
+    justify-content: flex-end;
+}
+
+/* فاصله و فونت بهتر برای متن‌ها */
+div.dataTables_wrapper select,
+div.dataTables_wrapper input[type="search"] {
+    margin-right: 8px;
+    margin-left: 8px;
+    font-family: 'IRANYekanXFaNum-Regular' !important;
+    font-size: 14px;
+}
+
+/* نمایش افقی کامل */
+div.dataTables_wrapper .top-row {
+    margin-left: .0em;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    flex-direction: row-reverse; /* مناسب برای RTL */
+}
+
+/* حذف فاصله اضافی در فیلتر */
+div.dataTables_wrapper div.dataTables_filter label {
+    margin-left: .0em;
+    white-space: nowrap;
+    margin-bottom: 0;
+}
+
+div.dataTables_wrapper div.dataTables_filter input {
+    margin-left: 0 !important; /* حذف فاصله پیش‌فرض */
+    margin-right: 8px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-family: 'IRANYekanXFaNum-Regular' !important;
+    font-size: 14px;
+}
+
+/* اگر خواستی با لیبل هم تراز بشه */
+div.dataTables_wrapper div.dataTables_filter label {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* فاصله بین متن و ورودی */
+    margin-bottom: 0;
+}
+
+.bg-primary-custome {
+    background-color: #0056b3 !important;
+}
+
+.nav-animated {
+    position: relative;
+    transition: all 0.3s ease;
+    padding-bottom: 4px;
+}
+
+    .nav-animated::after {
+        content: '';
+        position: absolute;
+        width: 0;
+        height: 2px;
+        bottom: 0;
+        right: 0;
+        background-color: #0d6efd; /* رنگ آبی Bootstrap */
+        transition: width 0.3s ease;
+    }
+
+    .nav-animated:hover {
+        color: #0d6efd !important;
+        transform: translateY(-2px);
+    }
+
+        .nav-animated:hover::after {
+            width: 100%;
+        }
+/* حذف نوار آبی کلیک برای همه مرورگرها */
+button:focus,
+button:active,
+a:focus,
+a:active,
+input:focus,
+textarea:focus,
+select:focus {
+    outline: none !important;
+    box-shadow: none !important;
+}
