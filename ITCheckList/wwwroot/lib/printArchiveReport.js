@@ -54,7 +54,7 @@
         const printStyle = `
             @font-face {
                 font-family: 'IRANYekan';
-                src: url('/fonts/IRANYekanXFaNum-Regular.ttf') format('truetype');
+                src: url('/fonts/IRANYekanXFaNum-Regular.woff2') format('truetype');
             }
             body {
                 direction: rtl;

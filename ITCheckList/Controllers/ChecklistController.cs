@@ -91,59 +91,103 @@ namespace ITCheckList.Controllers
         #endregion
 
         #region عملیات ویرایش بررسی های جاری
+        // GET: Edit
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
-            {
                 return NotFound();
-            }
 
             var item = await _context.TBLCheckItems.FindAsync(id);
             if (item == null)
-            {
                 return NotFound();
-            }
 
             return View(item);
         }
 
+        // POST: Edit
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, TBL_CheckItem model)
         {
             if (id != model.Id)
-            {
                 return NotFound();
-            }
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
+                return View(model);
+
+            try
             {
-                try
-                {
-                    _context.Update(model);
-                    await _context.SaveChangesAsync();
+                _context.Update(model);
+                await _context.SaveChangesAsync();
 
-                    // حذف کش بعد از ویرایش
-                    _cache.Remove(CacheKey);
+                // حذف کش بعد از ویرایش
+                _cache.Remove(CacheKey);
 
-                    TempData["SuccessMessage"] = "اطلاعات با موفقیت ویرایش شد.";
-
-                    return RedirectToAction(nameof(Index));
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!_context.TBLCheckItems.Any(e => e.Id == model.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
+                TempData["SuccessMessage"] = "اطلاعات با موفقیت ویرایش شد.";
+                return RedirectToAction(nameof(Index));
             }
-            return View(model);
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!_context.TBLCheckItems.Any(e => e.Id == model.Id))
+                    return NotFound();
+
+                throw;
+            }
         }
+
+        //public async Task<IActionResult> Edit(int? id)
+        //{
+        //    if (id == null)
+        //    {
+        //        return NotFound();
+        //    }
+
+        //    var item = await _context.TBLCheckItems.FindAsync(id);
+        //    if (item == null)
+        //    {
+        //        return NotFound();
+        //    }
+
+        //    return View(item);
+        //}
+
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //public async Task<IActionResult> Edit(int id, TBL_CheckItem model)
+        //{
+        //    if (id != model.Id)
+        //    {
+        //        return NotFound();
+        //    }
+
+        //    if (ModelState.IsValid)
+        //    {
+        //        try
+        //        {
+        //            _context.Update(model);
+        //            await _context.SaveChangesAsync();
+
+        //            // حذف کش بعد از ویرایش
+        //            _cache.Remove(CacheKey);
+
+        //            TempData["SuccessMessage"] = "اطلاعات با موفقیت ویرایش شد.";
+
+        //            return RedirectToAction(nameof(Index));
+        //        }
+        //        catch (DbUpdateConcurrencyException)
+        //        {
+        //            if (!_context.TBLCheckItems.Any(e => e.Id == model.Id))
+        //            {
+        //                return NotFound();
+        //            }
+        //            else
+        //            {
+        //                throw;
+        //            }
+        //        }
+        //    }
+        //    return View(model);
+        //}
         #endregion
 
         #region عملیات حذف بررسی های جاری

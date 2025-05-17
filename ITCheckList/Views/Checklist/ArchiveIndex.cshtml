@@ -9,7 +9,7 @@
 <h2 class="text-center mt-3">گزارش بایگانی بر اساس تاریخ</h2>
 <h5 class="text-center mt-3">.جهت نمایش اطلاعات، تاریخ خورد را از ورودی زیر انتخاب نمایید</h5>
 <div class="d-flex justify-content-center mt-4">
-    <form method="post" asp-action="ArchiveIndex" data-loading="true" class="d-flex align-items-center gap-2 flex-wrap flex-sm-nowrap">
+    <form method="post" asp-action="ArchiveIndex" onsubmit="startLoader()" class="d-flex align-items-center gap-2 flex-wrap flex-sm-nowrap">
         <input type="text" id="selectedDate" name="selectedDate"
                placeholder="تاریخ را انتخاب کنید"
                class="form-control w-auto text-center"

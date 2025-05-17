@@ -16,8 +16,11 @@
         second: '2-digit'
     });
 
-    document.getElementById('dateText').textContent = `${dayName} ${faDate}`;
-    document.getElementById('timeText').textContent = time;
+    const dateEl = document.getElementById('dateText');
+    const timeEl = document.getElementById('timeText');
+
+    if (dateEl) dateEl.textContent = `${dayName} ${faDate}`;
+    if (timeEl) timeEl.textContent = time;
 }
 
 updateHeaderDateTime();

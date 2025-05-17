@@ -1,9 +1,9 @@
 ﻿@font-face {
     font-family: 'IRANYekanXFaNum-Regular';
-    src: url('/fonts/IRANYekanXFaNum-Regular.woff2') format('woff2'), url('/fonts/IRANYekanXFaNum-Regular.woff') format('woff'), url('/fonts/IRANYekanXFaNum-Regular.ttf') format('truetype');
-    font-weight: normal;
-    font-style: normal;
+    src: url('/fonts/IRANYekanXFaNum-Regular.woff2') format('woff2');
+    font-display: swap;
 }
+
 /* تنظیم کلی صفحه */
 body {
     direction: rtl;
