@@ -36,6 +36,17 @@
         <p class="mb-0">تاریخ امروز: <span class="fw-bold" id="shamsiDate"></span></p>
     </div>
 
+    @if (ViewBag.HasYesterdayData != null && (bool)ViewBag.HasYesterdayData)
+    {
+        <div class="alert alert-warning text-center mt-2">
+            <strong>توجه:</strong> اطلاعات بررسی‌نشده‌ای از تاریخ <strong>@ViewBag.YesterdayDate</strong> در سیستم یافت شد.<br />
+            آیا مایل به بایگانی این اطلاعات هستید؟
+            <form asp-action="ArchivePreviousDayData" method="post" class="d-inline">
+                <button type="submit" class="btn btn-warning mt-2">بلی، لطفاً بایگانی شود</button>
+            </form>
+        </div>
+    }
+
     <!-- جدول اطلاعات -->
     <table class="table table-bordered text-center align-middle responsive-table" id="reportTable">
         <thead class="table-light">
@@ -177,8 +188,10 @@
                             icon: 'warning',
                             title: 'جدول خالی است!',
                             html: '<div style="direction: rtl;">هیچ داده‌ای برای چاپ موجود نیست.</div>',
-                            confirmButtonText: 'باشه',
-                            customClass: { popup: 'swal2-rtl' }
+                            confirmButtonText: 'متوجه شدم',
+                            customClass: {
+                                confirmButton: 'btn custom-btn btn-outline-primary',
+                            },
                         });
                     } else {
                         printFullTable();
@@ -189,7 +202,7 @@
                         icon: 'error',
                         title: 'خطا!',
                         html: `<div style="direction: rtl;">${err}</div>`,
-                        confirmButtonText: 'باشه'
+                        confirmButtonText: 'بازگشت'
                     });
                 });
         });
@@ -205,7 +218,10 @@
                             icon: 'warning',
                             title: 'هشدار!',
                             html: '<div style="direction: rtl;">هیچ گزارشی جهت ارسال به بایگانی امروز وجود ندارد.</div>',
-                            confirmButtonText: 'متوجه شدم'
+                            confirmButtonText: 'متوجه شدم',
+                            customClass: {
+                                confirmButton: 'btn custom-btn btn-outline-primary',
+                            },
                         });
                     } else {
                         fetch('/Checklist/HasPendingItems')
@@ -220,8 +236,10 @@
                                                 برخی موارد در وضعیت "در حال اقدام" یا "در دست بررسی" هستند.
                                                 <br>ابتدا همه را به وضعیت "انجام شد" تغییر دهید.
                                             </div>`,
-                                        confirmButtonText: 'متوجه شدم',
-                                        customClass: { popup: 'swal-wide' }
+                                            confirmButtonText: 'متوجه شدم',
+                                            customClass: {
+                                                confirmButton: 'btn custom-btn btn-outline-primary',
+                                            },
                                     });
                                 } else {
                                     Swal.fire({
@@ -235,9 +253,9 @@
                                         cancelButtonText: 'لغو عملیات',
                                         customClass: {
                                             popup: 'swal2-rtl',
-                                            confirmButton: 'btn btn-danger',
-                                            denyButton: 'btn btn-secondary',
-                                            cancelButton: 'btn btn-light border'
+                                            confirmButton: 'btn custom-btn btn-outline-primary',
+                                            denyButton: 'btn custom-btn btn-outline-primary',
+                                            cancelButton: 'btn custom-btn btn-outline-primary'
                                         },
                                         buttonsStyling: false
                                     }).then(result => {
@@ -253,12 +271,14 @@
                         icon: 'error',
                         title: 'خطا!',
                         html: `<div style="direction: rtl;">${err}</div>`,
-                        confirmButtonText: 'باشه'
+                            confirmButtonText: 'متوجه شدم',
+                            customClass: {
+                                confirmButton: 'btn custom-btn btn-outline-primary',
+                            },
                     });
                 });
         });
     </script>
-
     <!--=================================================================-->
     <script>
         function archiveToday(deleteAfter) {
@@ -271,7 +291,10 @@
                     icon: 'success',
                     title: 'موفق!',
                     html: `<div style="direction: rtl;">${msg}</div>`,
-                    confirmButtonText: 'باشه'
+                            confirmButtonText: 'قبول و بازگشت',
+                            customClass: {
+                                confirmButton: 'btn custom-btn btn-outline-primary',
+                            },
                 }).then(() => location.reload());
             })
             .catch(err => {
@@ -279,7 +302,10 @@
                     icon: 'error',
                     title: 'خطا!',
                     html: `<div style="direction: rtl;">${err}</div>`,
-                    confirmButtonText: 'متوجه شدم'
+                            confirmButtonText: 'متوجه شدم',
+                            customClass: {
+                                confirmButton: 'btn custom-btn btn-outline-primary',
+                            },
                 });
             });
         }

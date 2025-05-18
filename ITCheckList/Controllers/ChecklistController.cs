@@ -32,8 +32,36 @@ namespace ITCheckList.Controllers
                 _cache.Set(CacheKey, items, cacheOptions);
             }
 
+            // بررسی وجود داده‌های روز قبل
+            var yesterday = DateTime.Now.Date.AddDays(-1);
+            bool hasYesterdayData = _context.TBLCheckItems.Any(c => c.CreatedAt.Date == yesterday);
+
+            ViewBag.HasYesterdayData = hasYesterdayData;
+            ViewBag.YesterdayDate = yesterday.ToString("yyyy/MM/dd");
+
             return View(items);
         }
+
+
+        //public IActionResult Index()
+        //{
+        //    var yesterday = DateTime.Today.AddDays(-1);
+        //    bool hasUnarchivedItems = _context.TBLCheckItems.Any(c => c.CreatedAt.Date == yesterday);
+
+        //    ViewBag.HasUnarchivedItems = hasUnarchivedItems;
+
+        //    if (!_cache.TryGetValue(CacheKey, out List<TBL_CheckItem> items))
+        //    {
+        //        items = _context.TBLCheckItems.OrderByDescending(c => c.CreatedAt).ToList();
+
+        //        var cacheOptions = new MemoryCacheEntryOptions()
+        //            .SetSlidingExpiration(TimeSpan.FromMinutes(5));
+
+        //        _cache.Set(CacheKey, items, cacheOptions);
+        //    }
+
+        //    return View(items);
+        //}
 
         #region عملیات ثبت بررسی جدید
         [HttpGet]
@@ -369,5 +397,55 @@ namespace ITCheckList.Controllers
             return input;
         }
         #endregion
+
+        [HttpPost]
+        public IActionResult ArchivePreviousDayData()
+        {
+            var yesterday = DateTime.Now.Date.AddDays(-1);
+
+            var yesterdayItems = _context.TBLCheckItems
+                .Where(c => c.CreatedAt.Date == yesterday)
+                .ToList();
+
+            foreach (var item in yesterdayItems)
+            {
+                var existing = _context.TBLCheckItemArchives
+                    .FirstOrDefault(a =>
+                        a.Section == item.Section &&
+                        a.Description == item.Description &&
+                        a.CreatedAt.Date == item.CreatedAt.Date);
+
+                if (existing != null)
+                {
+                    // بازنویسی اطلاعات تکراری
+                    existing.Note = item.Note;
+                    existing.Status = item.Status;
+                    existing.ArchivedAt = DateTime.Now;
+                }
+                else
+                {
+                    _context.TBLCheckItemArchives.Add(new TBL_CheckItemArchive
+                    {
+                        Section = item.Section,
+                        Description = item.Description,
+                        CreatedAt = item.CreatedAt,
+                        Note = item.Note,
+                        Status = item.Status,
+                        ArchivedAt = DateTime.Now
+                    });
+                }
+            }
+
+            // حذف رکوردهای روز قبل از جدول اصلی
+            _context.TBLCheckItems.RemoveRange(yesterdayItems);
+            _context.SaveChanges();
+
+            // پاک‌سازی کش
+            _cache.Remove(CacheKey);
+
+            TempData["SuccessMessage"] = "اطلاعات مربوط به روز قبل با موفقیت بایگانی شد.";
+            return RedirectToAction("Index");
+        }
+
     }
 }
