@@ -56,29 +56,6 @@ namespace ITCheckList.Controllers
             return View();
         }
 
-        //public IActionResult Index()
-        //{
-        //    if (!_cache.TryGetValue(CacheKey, out List<TBL_CheckItem> items))
-        //    {
-        //        items = _context.TBLCheckItems.OrderByDescending(c => c.CreatedAt).ToList();
-
-        //        var cacheOptions = new MemoryCacheEntryOptions()
-        //            .SetSlidingExpiration(TimeSpan.FromMinutes(5));
-
-        //        _cache.Set(CacheKey, items, cacheOptions);
-        //    }
-
-        //    // بررسی وجود داده‌های روز قبل
-        //    var yesterday = DateTime.Now.Date.AddDays(-1);
-        //    bool hasYesterdayData = _context.TBLCheckItems.Any(c => c.CreatedAt.Date == yesterday);
-
-        //    ViewBag.HasYesterdayData = hasYesterdayData;
-        //    ViewBag.YesterdayDate = yesterday.ToString("yyyy/MM/dd");
-
-        //    return View(items);
-        //}
-
-
         #region عملیات ثبت بررسی جدید
         [HttpGet]
         public IActionResult Create()
@@ -469,6 +446,5 @@ namespace ITCheckList.Controllers
             TempData["SuccessMessage"] = "اطلاعات قدیمی با موفقیت بایگانی شدند.";
             return RedirectToAction("Index");
         }
-
     }
 }

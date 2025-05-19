@@ -36,7 +36,7 @@
                 Array.from(clonedTable.rows).forEach(row => {
                     const statusCell = row.cells[5];
                     if (statusCell && statusCell.textContent.includes("انجام شد")) {
-                        row.style.backgroundColor = "#00b89b14";
+                        row.style.backgroundColor = "#0056B314";
                     }
                 });
 

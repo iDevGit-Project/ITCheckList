@@ -9,10 +9,10 @@
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
 <!--=================================================================-->
 <!-- پیام‌های موفقیت یا اطلاعات -->
-@if (TempData["SuccessMessage"] != null)
+@* @if (TempData["SuccessMessage"] != null)
 {
     <div class="alert alert-success text-center">@TempData["SuccessMessage"]</div>
-}
+} *@
 <!--=================================================================-->
 @if (hasUnarchivedOldData)
 {
@@ -48,7 +48,7 @@
     <h4 class="text-center fw-bold">مدیریت چک لیست روزانه</h4>
     <!-- نوار ابزار بالا -->
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 my-3">
-        <button id="btnAdd" type="button" class="btn custom-btn">
+        <button id="btnAdd" type="button" class="btn custom-btn btn-outline-primary">
             افزودن موضوع جدید
         </button>
         <p class="mb-0">تاریخ امروز: <span class="fw-bold" id="shamsiDate"></span></p>
@@ -73,11 +73,23 @@
                 int i = 1;
                 foreach (var item in items)
                 {
-                    // اگر داده 1 تا 3 روز گذشته باشد ولی بایگانی نشده، رنگ زرد کم رنگ
                     var daysDiff = (DateTime.Now.Date - item.CreatedAt.Date).Days;
                     var isOldUnarchived = daysDiff >= 1 && daysDiff <= 3 && hasUnarchivedOldData;
 
-                    var rowClass = isOldUnarchived ? "table-warning" : (item.Status ? "done-row" : "");
+                    // تعیین کلاس ردیف
+                    var rowClass = "";
+                    if (isOldUnarchived)
+                    {
+                        rowClass = "table-warning";
+                        if (!item.Status)
+                        {
+                            rowClass += " status-pending-row"; // ردیف چشمک‌زن
+                        }
+                    }
+                    else
+                    {
+                        rowClass = item.Status ? "done-row" : "status-pending-row"; // چشمک‌زن برای در دست اقدام
+                    }
 
                     <tr class="@rowClass">
                         <td>@(i++)</td>
@@ -86,7 +98,7 @@
                         <td>@item.CreatedAt.ToString("yyyy/MM/dd")</td>
                         <td class="text-end">@item.Note</td>
                         <td class="text-center">
-                            <span class="@(item.Status ? "status-done" : "status-pending") d-block rounded-2 px-2 py-1">
+                            <span class="d-block rounded-2 px-2 py-1 status-badge @(item.Status ? "status-done" : "status-pending blinking-badge")">
                                 @(item.Status ? "انجام شد." : "در دست اقدام.")
                             </span>
                         </td>
@@ -110,9 +122,10 @@
                 }
             }
         </tbody>
+
     </table>
 
-<!--=================================================================-->
+    <!--=================================================================-->
     <!-- Overlay برای قفل کردن سیستم -->
     @if (hasUnarchivedOldData)
     {
@@ -120,13 +133,13 @@
         width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 9999;backdrop-filter: blur(4px);
         display: flex; justify-content: center; align-items: center; flex-direction: column;">
             <div class="text-center">
-                <h3 class="text-dark">سیستم به دلیل بایگانی‌نشدن اطلاعات گذشته موقتاً قفل شده است.</h3><br/>
+                <h3 class="text-dark">سیستم به دلیل بایگانی‌نشدن اطلاعات گذشته موقتاً قفل شده است.</h3><br />
                 <h5 class="text-dark">کاربرگرامی: لطفاً تا قبل از به اتمام رسیدن زمان، اطلاعات گذشته را بایگانی و ثبت نمایید.</h5>
                 <button id="temporaryUnlockBtn" class="btn btn-primary mt-3">باز کردن موقت (30 ثانیه)</button>
             </div>
         </div>
     }
-<!--=================================================================-->
+    <!--=================================================================-->
     <!-- دکمه دریافت خروجی -->
     <div class="text-start mt-3">
         <!-- دکمه درج در بایگانی امروز -->
@@ -172,7 +185,6 @@
     <script>
         (function () {
             var shouldLock = @hasUnarchivedOldData.ToString().ToLower();
-
             if (shouldLock && !sessionStorage.getItem("temporaryUnlockUsed")) {
                 document.getElementById("overlay-blocker").style.display = "flex";
 
@@ -189,7 +201,19 @@
             else if (shouldLock) {
                 document.getElementById("overlay-blocker").style.display = "flex";
             }
-        })();    
+        })();
+    </script>
+    <!--=================================================================-->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const blinkingBadges = document.querySelectorAll(".blinking-badge");
+
+            blinkingBadges.forEach(badge => {
+                setInterval(() => {
+                    badge.classList.toggle("dimmed");
+                }, 500); // چشمک هر ۱ ثانیه
+            });
+        });
     </script>
     <!--=================================================================-->
     <script>
@@ -277,14 +301,14 @@
                                 if (pending.hasPending) {
                                     Swal.fire({
                                         icon: 'warning',
-                                        title: 'عدم امکان بایگانی!',
+                                        title: '!...هشدار',
                                         html: `
-                                            <div style="direction: rtl; text-align: right; font-size: 15px; line-height: 2;">
-                                                برخی موارد در وضعیت "در حال اقدام" یا "در دست بررسی" هستند.
-                                                <br>ابتدا همه را به وضعیت "انجام شد" تغییر دهید.
-                                            </div>`,
+                                        <div class="custom-alert-content">
+                                        برخی موارد در وضعیت "در دست اقدام" یا "در دست بررسی" هستند. جهت ثبت، ابتدا همه را به وضعیت "انجام شد" تغییر دهید.
+                                        </div>`,
                                             confirmButtonText: 'متوجه شدم',
                                             customClass: {
+                                                popup: 'custom-swal-width',
                                                 confirmButton: 'btn custom-btn btn-outline-primary',
                                             },
                                     });
