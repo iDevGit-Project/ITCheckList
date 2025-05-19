@@ -1,15 +1,34 @@
 ﻿@model List<ITCheckList.Models.TBL_CheckItem>
 @{
     ViewData["Title"] = "لیست بررسی‌های روزانه";
+    var items = ViewBag.Items as List<TBL_CheckItem>;
+    bool hasUnarchivedOldData = ViewBag.HasUnarchivedOldData ?? false;
 }
 <!-- اضافه کردن Font Awesome از CDN -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
 <!--=================================================================-->
+<!-- پیام‌های موفقیت یا اطلاعات -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success text-center">@TempData["SuccessMessage"]</div>
+}
+<!--=================================================================-->
+@if (hasUnarchivedOldData)
+{
+    <div class="alert alert-warning text-center mt-2">
+        <strong>توجه:</strong> اطلاعات بررسی‌نشده‌ای از 1 تا 3 روز گذشته در سیستم یافت شد.<br />
+        لطفاً ابتدا این اطلاعات را بایگانی کنید تا بتوانید از سیستم استفاده کنید.
+        <form asp-action="ArchivePreviousDayData" method="post" class="d-inline mt-2">
+            <button type="submit" class="btn btn-warning">بلی، لطفاً بایگانی شود</button>
+        </form>
+    </div>
+}
+<!--=================================================================-->
 @{
     var successMessage = TempData["SuccessMessage"] as string;
 }
-
+<!--=================================================================-->
 @if (!string.IsNullOrEmpty(successMessage))
 {
     <script>
@@ -25,7 +44,6 @@
     </script>
 }
 <!--=================================================================-->
-
 <div class="mt-5" id="reportSection" dir="rtl">
     <h4 class="text-center fw-bold">مدیریت چک لیست روزانه</h4>
     <!-- نوار ابزار بالا -->
@@ -35,17 +53,6 @@
         </button>
         <p class="mb-0">تاریخ امروز: <span class="fw-bold" id="shamsiDate"></span></p>
     </div>
-
-    @if (ViewBag.HasYesterdayData != null && (bool)ViewBag.HasYesterdayData)
-    {
-        <div class="alert alert-warning text-center mt-2">
-            <strong>توجه:</strong> اطلاعات بررسی‌نشده‌ای از تاریخ <strong>@ViewBag.YesterdayDate</strong> در سیستم یافت شد.<br />
-            آیا مایل به بایگانی این اطلاعات هستید؟
-            <form asp-action="ArchivePreviousDayData" method="post" class="d-inline">
-                <button type="submit" class="btn btn-warning mt-2">بلی، لطفاً بایگانی شود</button>
-            </form>
-        </div>
-    }
 
     <!-- جدول اطلاعات -->
     <table class="table table-bordered text-center align-middle responsive-table" id="reportTable">
@@ -61,13 +68,16 @@
             </tr>
         </thead>
         <tbody>
-            @if (Model != null)
+            @if (items != null)
             {
                 int i = 1;
-                foreach (var item in Model)
+                foreach (var item in items)
                 {
-                    // شرط برای اعمال کلاس رنگ در سطر
-                    var rowClass = item.Status ? "done-row" : "";
+                    // اگر داده 1 تا 3 روز گذشته باشد ولی بایگانی نشده، رنگ زرد کم رنگ
+                    var daysDiff = (DateTime.Now.Date - item.CreatedAt.Date).Days;
+                    var isOldUnarchived = daysDiff >= 1 && daysDiff <= 3 && hasUnarchivedOldData;
+
+                    var rowClass = isOldUnarchived ? "table-warning" : (item.Status ? "done-row" : "");
 
                     <tr class="@rowClass">
                         <td>@(i++)</td>
@@ -81,7 +91,7 @@
                             </span>
                         </td>
                         <td class="text-center">
-                            @if (!item.Status)
+                            @if (!item.Status && !hasUnarchivedOldData)
                             {
                                 <a asp-controller="Checklist" asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-warning">
                                     <i class="fas fa-edit fa-lg"></i>
@@ -91,7 +101,7 @@
                                     <i class="fas fa-trash-alt fa-lg"></i>
                                 </button>
                             }
-                            else
+                            else if (hasUnarchivedOldData)
                             {
                                 <span class="text-muted">غیرفعال</span>
                             }
@@ -102,13 +112,27 @@
         </tbody>
     </table>
 
+<!--=================================================================-->
+    <!-- Overlay برای قفل کردن سیستم -->
+    @if (hasUnarchivedOldData)
+    {
+        <div id="overlay-blocker" style="position: fixed; top: 0; left: 0;
+        width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 9999;backdrop-filter: blur(4px);
+        display: flex; justify-content: center; align-items: center; flex-direction: column;">
+            <div class="text-center">
+                <h3 class="text-dark">سیستم به دلیل بایگانی‌نشدن اطلاعات گذشته موقتاً قفل شده است.</h3><br/>
+                <h5 class="text-dark">کاربرگرامی: لطفاً تا قبل از به اتمام رسیدن زمان، اطلاعات گذشته را بایگانی و ثبت نمایید.</h5>
+                <button id="temporaryUnlockBtn" class="btn btn-primary mt-3">باز کردن موقت (30 ثانیه)</button>
+            </div>
+        </div>
+    }
+<!--=================================================================-->
     <!-- دکمه دریافت خروجی -->
     <div class="text-start mt-3">
         <!-- دکمه درج در بایگانی امروز -->
         <button id="btnArchiveToday" class="btn custom-btn btn-outline-primary">ارسال گزارشات به بایگانی امروز</button>
         <button id="btnPrintTable" class="btn custom-btn btn-outline-primary">دریافت خروجی از اطلاعات</button>
     </div>
-
 </div>
 <!--=================================================================-->
 <!--نمایش مودال جهت ثبت اطلاعات-->
@@ -136,7 +160,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/print-js/1.6.0/print.min.js" asp-append-version="true"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" asp-append-version="true"></script>
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-
     <!--=================================================================-->
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
@@ -144,6 +167,30 @@
     <!--فراخوانی اسکریپت خروجی گزارش از اطلاعات-->
     <script src="~/lib/exporttableprint.js" asp-append-version="true"></script>
     <script src="~/lib/data-loading.js" asp-append-version="true"></script>
+    <!--=================================================================-->
+    <!--قفل کردن کلی سیستم با JavaScript (Overlay Blocker)-->
+    <script>
+        (function () {
+            var shouldLock = @hasUnarchivedOldData.ToString().ToLower();
+
+            if (shouldLock && !sessionStorage.getItem("temporaryUnlockUsed")) {
+                document.getElementById("overlay-blocker").style.display = "flex";
+
+                document.getElementById("temporaryUnlockBtn").addEventListener("click", function () {
+                    sessionStorage.setItem("temporaryUnlockUsed", "true");
+                    document.getElementById("overlay-blocker").style.display = "none";
+
+                    // بعد از 30 ثانیه دوباره قفل شود
+                    setTimeout(function () {
+                        document.getElementById("overlay-blocker").style.display = "flex";
+                    }, 30000);
+                });
+            }
+            else if (shouldLock) {
+                document.getElementById("overlay-blocker").style.display = "flex";
+            }
+        })();    
+    </script>
     <!--=================================================================-->
     <script>
         $(document).ready(function () {

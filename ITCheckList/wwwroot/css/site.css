@@ -81,7 +81,7 @@ body {
 
     .btn i {
         margin-right: 0px; /* فاصله بین آیکن و متن */
-        font-size: 1.2rem; /* بزرگتر کردن اندازه آیکن */
+        font-size: 1.1rem; /* بزرگتر کردن اندازه آیکن */
     }
 
     /* افزودن افکت hover */
@@ -450,4 +450,7 @@ select:focus {
 
 .spinner-border {
     margin-bottom: 15px;
+}
+.bg-warning-subtle {
+    background-color: #fff8dc !important; /* زرد خیلی ملایم */
 }

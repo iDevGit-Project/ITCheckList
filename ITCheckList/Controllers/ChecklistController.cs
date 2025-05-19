@@ -22,34 +22,42 @@ namespace ITCheckList.Controllers
 
         public IActionResult Index()
         {
-            if (!_cache.TryGetValue(CacheKey, out List<TBL_CheckItem> items))
+            // بررسی داده‌های 1 تا 3 روز قبل که بایگانی نشده‌اند
+            DateTime today = DateTime.Now.Date;
+            DateTime threeDaysAgo = today.AddDays(-3);
+
+            var unarchivedOldDataExists = _context.TBLCheckItems
+                .Any(c => c.CreatedAt.Date >= threeDaysAgo && c.CreatedAt.Date < today);
+
+            // مقدار برای ViewBag جهت نمایش هشدار و کنترل در View
+            ViewBag.HasUnarchivedOldData = unarchivedOldDataExists;
+
+            // اگر داده‌های بایگانی نشده هست، اجازه دسترسی به داده‌ها را نمی‌دهیم
+            if (unarchivedOldDataExists)
             {
-                items = _context.TBLCheckItems.OrderByDescending(c => c.CreatedAt).ToList();
+                // خالی برمی‌گردانیم ولی اجازه هیچ عملیاتی به کاربر داده نشود (با قفل JS و کنترل سمت سرور)
+                ViewBag.Items = new List<TBL_CheckItem>();
+            }
+            else
+            {
+                // داده‌ها را از کش بگیریم یا از دیتابیس
+                if (!_cache.TryGetValue(CacheKey, out List<TBL_CheckItem> items))
+                {
+                    items = _context.TBLCheckItems.OrderByDescending(c => c.CreatedAt).ToList();
 
-                var cacheOptions = new MemoryCacheEntryOptions()
-                    .SetSlidingExpiration(TimeSpan.FromMinutes(5));
+                    var cacheOptions = new MemoryCacheEntryOptions()
+                        .SetSlidingExpiration(TimeSpan.FromMinutes(5));
 
-                _cache.Set(CacheKey, items, cacheOptions);
+                    _cache.Set(CacheKey, items, cacheOptions);
+                }
+                ViewBag.Items = items;
             }
 
-            // بررسی وجود داده‌های روز قبل
-            var yesterday = DateTime.Now.Date.AddDays(-1);
-            bool hasYesterdayData = _context.TBLCheckItems.Any(c => c.CreatedAt.Date == yesterday);
-
-            ViewBag.HasYesterdayData = hasYesterdayData;
-            ViewBag.YesterdayDate = yesterday.ToString("yyyy/MM/dd");
-
-            return View(items);
+            return View();
         }
-
 
         //public IActionResult Index()
         //{
-        //    var yesterday = DateTime.Today.AddDays(-1);
-        //    bool hasUnarchivedItems = _context.TBLCheckItems.Any(c => c.CreatedAt.Date == yesterday);
-
-        //    ViewBag.HasUnarchivedItems = hasUnarchivedItems;
-
         //    if (!_cache.TryGetValue(CacheKey, out List<TBL_CheckItem> items))
         //    {
         //        items = _context.TBLCheckItems.OrderByDescending(c => c.CreatedAt).ToList();
@@ -60,8 +68,16 @@ namespace ITCheckList.Controllers
         //        _cache.Set(CacheKey, items, cacheOptions);
         //    }
 
+        //    // بررسی وجود داده‌های روز قبل
+        //    var yesterday = DateTime.Now.Date.AddDays(-1);
+        //    bool hasYesterdayData = _context.TBLCheckItems.Any(c => c.CreatedAt.Date == yesterday);
+
+        //    ViewBag.HasYesterdayData = hasYesterdayData;
+        //    ViewBag.YesterdayDate = yesterday.ToString("yyyy/MM/dd");
+
         //    return View(items);
         //}
+
 
         #region عملیات ثبت بررسی جدید
         [HttpGet]
@@ -401,13 +417,21 @@ namespace ITCheckList.Controllers
         [HttpPost]
         public IActionResult ArchivePreviousDayData()
         {
-            var yesterday = DateTime.Now.Date.AddDays(-1);
+            DateTime today = DateTime.Now.Date;
+            DateTime threeDaysAgo = today.AddDays(-3);
 
-            var yesterdayItems = _context.TBLCheckItems
-                .Where(c => c.CreatedAt.Date == yesterday)
+            // دوباره بررسی وجود داده‌های قدیمی (1 تا 3 روز گذشته) که بایگانی نشده‌اند
+            var unarchivedOldData = _context.TBLCheckItems
+                .Where(c => c.CreatedAt.Date >= threeDaysAgo && c.CreatedAt.Date < today)
                 .ToList();
 
-            foreach (var item in yesterdayItems)
+            if (unarchivedOldData == null || unarchivedOldData.Count == 0)
+            {
+                TempData["InfoMessage"] = "داده‌های قدیمی جهت بایگانی یافت نشد یا قبلاً بایگانی شده است.";
+                return RedirectToAction("Index");
+            }
+
+            foreach (var item in unarchivedOldData)
             {
                 var existing = _context.TBLCheckItemArchives
                     .FirstOrDefault(a =>
@@ -417,7 +441,6 @@ namespace ITCheckList.Controllers
 
                 if (existing != null)
                 {
-                    // بازنویسی اطلاعات تکراری
                     existing.Note = item.Note;
                     existing.Status = item.Status;
                     existing.ArchivedAt = DateTime.Now;
@@ -436,14 +459,14 @@ namespace ITCheckList.Controllers
                 }
             }
 
-            // حذف رکوردهای روز قبل از جدول اصلی
-            _context.TBLCheckItems.RemoveRange(yesterdayItems);
+            // حذف داده‌های بایگانی شده از جدول اصلی
+            _context.TBLCheckItems.RemoveRange(unarchivedOldData);
             _context.SaveChanges();
 
             // پاک‌سازی کش
             _cache.Remove(CacheKey);
 
-            TempData["SuccessMessage"] = "اطلاعات مربوط به روز قبل با موفقیت بایگانی شد.";
+            TempData["SuccessMessage"] = "اطلاعات قدیمی با موفقیت بایگانی شدند.";
             return RedirectToAction("Index");
         }
 
