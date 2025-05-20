@@ -391,6 +391,7 @@ namespace ITCheckList.Controllers
         }
         #endregion
 
+        #region عملیات مربوط به بررسی اطلاعات بایگانی نشده طی 1 تا 3 روز گذشته
         [HttpPost]
         public IActionResult ArchivePreviousDayData()
         {
@@ -446,5 +447,40 @@ namespace ITCheckList.Controllers
             TempData["SuccessMessage"] = "اطلاعات قدیمی با موفقیت بایگانی شدند.";
             return RedirectToAction("Index");
         }
+        #endregion
+
+        #region عملیات مربوط به بررسی وضعیت روز جاری
+        [HttpGet]
+        public IActionResult CheckTodayData()
+        {
+            var today = DateTime.Today;
+            var hasTodayData = _context.TBLCheckItems.Any(x => x.CreatedAt.Date == today);
+
+            // بررسی وضعیت مواردی که در وضعیت "در دست اقدام" هستند
+            var allPending = _context.TBLCheckItems
+                                .Where(x => x.CreatedAt.Date == today)
+                                .All(x => !x.Status);
+
+            return Json(new { hasTodayData, allPending });
+        }
+        #endregion
+
+        #region عملیات تأیید کردن مستقیم درخواست روز جاری بدون ورود به قسمت ویرایش
+        [HttpPost]
+        public JsonResult ConfirmFinal(int id)
+        {
+            var item = _context.TBLCheckItems.FirstOrDefault(x => x.Id == id);
+            if (item == null)
+            {
+                return Json(new { success = false, message = "آیتم مورد نظر یافت نشد." });
+            }
+
+            item.Status = true;
+            _context.SaveChanges();
+
+            return Json(new { success = true });
+        }
+
+        #endregion
     }
 }

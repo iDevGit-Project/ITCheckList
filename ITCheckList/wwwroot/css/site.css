@@ -200,7 +200,7 @@ body {
 }
 
 .done-row {
-    background-color: #f6fbff !important;
+    background-color: #F0F7F7 !important;
 }
 
 .status-done {
@@ -482,3 +482,34 @@ select:focus {
     .blinking-badge.dimmed {
         opacity: 0.2;
     }
+.daily-reminder {
+    position: fixed;
+    top: 60px;
+    right: 20px;
+    background-color: #ffc107;
+    color: #000;
+    padding: 15px 25px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-family: 'IRANYekanXFaNum-Regular';
+    font-weight: bold;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 9999;
+}
+.pending-row-highlight .status-badge {
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.3;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}

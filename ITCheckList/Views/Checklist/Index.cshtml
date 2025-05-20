@@ -73,22 +73,21 @@
                 int i = 1;
                 foreach (var item in items)
                 {
-                    var daysDiff = (DateTime.Now.Date - item.CreatedAt.Date).Days;
-                    var isOldUnarchived = daysDiff >= 1 && daysDiff <= 3 && hasUnarchivedOldData;
-
-                    // تعیین کلاس ردیف
                     var rowClass = "";
+                    var isOldUnarchived = (DateTime.Now.Date - item.CreatedAt.Date).Days >= 1 &&
+                    (DateTime.Now.Date - item.CreatedAt.Date).Days <= 3 &&
+                    hasUnarchivedOldData;
                     if (isOldUnarchived)
                     {
                         rowClass = "table-warning";
                         if (!item.Status)
                         {
-                            rowClass += " status-pending-row"; // ردیف چشمک‌زن
+                            rowClass += " pending-row-highlight"; // ← فقط وقتی Status=false
                         }
                     }
                     else
                     {
-                        rowClass = item.Status ? "done-row" : "status-pending-row"; // چشمک‌زن برای در دست اقدام
+                        rowClass = item.Status ? "done-row" : "pending-row-highlight";
                     }
 
                     <tr class="@rowClass">
@@ -105,6 +104,10 @@
                         <td class="text-center">
                             @if (!item.Status && !hasUnarchivedOldData)
                             {
+                                <button class="btn btn-sm btn-outline-success btn-confirm-final" data-id="@item.Id">
+                                    <i class="fas fa-check-circle fa-lg"></i>
+                                </button>
+
                                 <a asp-controller="Checklist" asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-warning">
                                     <i class="fas fa-edit fa-lg"></i>
                                 </a>
@@ -122,7 +125,6 @@
                 }
             }
         </tbody>
-
     </table>
 
     <!--=================================================================-->
@@ -180,6 +182,99 @@
     <!--فراخوانی اسکریپت خروجی گزارش از اطلاعات-->
     <script src="~/lib/exporttableprint.js" asp-append-version="true"></script>
     <script src="~/lib/data-loading.js" asp-append-version="true"></script>
+    <!--=================================================================-->
+    <!--فراخوانی اسکریپت کد آجاکس مربوط به تأیید نهایی به صورت مستقیم-->
+    <script>
+        $(document).ready(function () {
+            $('.btn-confirm-final').click(function () {
+                const id = $(this).data('id');
+                const row = $(this).closest('tr');
+                Swal.fire({
+                    title: 'تأیید نهایی',
+                    text: "آیا مطمئن هستید که این آیتم باید به وضعیت انجام‌شده تغییر یابد؟",
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#28a745',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'بله، نهایی شود',
+                    cancelButtonText: 'لغو'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            title: 'در حال پردازش...',
+                            text: 'لطفاً صبر کنید',
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+                        $.ajax({
+                            url: '/Checklist/ConfirmFinal',
+                            type: 'POST',
+                            data: { id: id },
+                            success: function (response) {
+                                if (response.success) {
+                                    Swal.fire({
+                                        title: 'موفق!',
+                                        text: 'وضعیت آیتم به انجام‌شده تغییر یافت.',
+                                        icon: 'success',
+                                        timer: 2000,
+                                        showConfirmButton: false
+                                    });
+
+                                    // به‌روزرسانی UI
+                                    row.find('.status-badge')
+                                        .removeClass('status-pending')
+                                        .addClass('status-done')
+                                        .text('انجام شد.');
+
+                                    row.find('.btn-confirm-final').remove(); // حذف دکمه
+                                    row.removeClass('pending-row-highlight').addClass('done-row');
+
+                                } else {
+                                    Swal.fire('خطا', response.message, 'error');
+                                }
+                            },
+                            error: function () {
+                                Swal.fire('خطا', 'ارتباط با سرور برقرار نشد.', 'error');
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+    <!--=================================================================-->
+    <!--فراخوانی اسکریپت بررسی وضعیت روز جاری-->
+    <script>
+        $(document).ready(function () {
+            // فقط بین ساعت 10 تا 18 ظهر بررسی کن
+            const now = new Date();
+            const hour = now.getHours();
+
+            if (hour >= 10 && hour <= 18) {
+                $.get('/Checklist/CheckTodayData', function (response) {
+                    if (!response.hasTodayData || response.allPending) {
+                        showDailyReminder();
+                    }
+                });
+            }
+
+            function showDailyReminder() {
+                const reminder = $('<div>')
+                    .addClass('daily-reminder')
+                    .html('⏰ هنوز آیتمی برای امروز ثبت یا انجام نشده است!')
+                    .hide()
+                    .fadeIn(1000);
+
+                $('body').append(reminder);
+
+                setTimeout(() => {
+                    reminder.fadeOut(1500, () => reminder.remove());
+                }, 10000);
+            }
+        });
+    </script>
     <!--=================================================================-->
     <!--قفل کردن کلی سیستم با JavaScript (Overlay Blocker)-->
     <script>
