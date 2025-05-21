@@ -13,6 +13,7 @@
 
 </head>
 <body>
+    <div class="daily-reminder-container" id="notification-container"></div>
     <header dir="rtl">
         <nav class="navbar navbar-expand-sm navbar-light bg-light text-dark border-bottom box-shadow mb-3" dir="rtl">
             <div class="container d-flex justify-content-between align-items-center">
@@ -77,6 +78,32 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js" asp-append-version="true"></script>
     <!--=================================================================-->
     <script src="~/lib/showdatetimefa.js" asp-append-version="true"></script>
+    <!--=================================================================-->
+    <!-- پیام های سفارشی در برنامه -->
+    <script>
+        function showNotification(message, type = "info") {
+            const notif = document.createElement("div");
+            notif.className = `daily-reminder ${type}`;
+            notif.innerHTML = message;
+
+            document.body.appendChild(notif);
+
+            // فعال‌سازی حالت نمایان شدن
+            requestAnimationFrame(() => {
+                notif.classList.add("show");
+            });
+
+            // مدت زمان نمایش (4000ms = 4 ثانیه)
+            setTimeout(() => {
+                notif.classList.remove("show");
+
+                // مدت زمان محو شدن (500ms مطابق transition)
+                setTimeout(() => {
+                    notif.remove();
+                }, 500);
+            }, 4000);
+        }
+    </script>
     <!--=================================================================-->
     <script>
         function startLoader() {

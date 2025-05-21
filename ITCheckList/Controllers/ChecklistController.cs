@@ -19,42 +19,46 @@ namespace ITCheckList.Controllers
             _context = context;
             _cache = cache;
         }
-
         public IActionResult Index()
         {
-            // بررسی داده‌های 1 تا 3 روز قبل که بایگانی نشده‌اند
             DateTime today = DateTime.Now.Date;
             DateTime threeDaysAgo = today.AddDays(-3);
 
-            var unarchivedOldDataExists = _context.TBLCheckItems
-                .Any(c => c.CreatedAt.Date >= threeDaysAgo && c.CreatedAt.Date < today);
+            // بررسی وجود داده‌های قدیمی که بایگانی نشده‌اند
+            var unarchivedOldData = _context.TBLCheckItems
+                .Where(c => c.CreatedAt.Date >= threeDaysAgo && c.CreatedAt.Date < today)
+                .OrderBy(c => c.CreatedAt)
+                .ToList();
 
-            // مقدار برای ViewBag جهت نمایش هشدار و کنترل در View
-            ViewBag.HasUnarchivedOldData = unarchivedOldDataExists;
+            ViewBag.HasUnarchivedOldData = unarchivedOldData.Any();
 
-            // اگر داده‌های بایگانی نشده هست، اجازه دسترسی به داده‌ها را نمی‌دهیم
-            if (unarchivedOldDataExists)
+            if (unarchivedOldData.Any())
             {
-                // خالی برمی‌گردانیم ولی اجازه هیچ عملیاتی به کاربر داده نشود (با قفل JS و کنترل سمت سرور)
-                ViewBag.Items = new List<TBL_CheckItem>();
+                // نمایش داده‌های قدیمی به جای داده‌های روز جاری
+                ViewBag.Items = unarchivedOldData;
             }
             else
             {
-                // داده‌ها را از کش بگیریم یا از دیتابیس
+                // نمایش داده‌های امروز از کش یا دیتابیس
                 if (!_cache.TryGetValue(CacheKey, out List<TBL_CheckItem> items))
                 {
-                    items = _context.TBLCheckItems.OrderByDescending(c => c.CreatedAt).ToList();
+                    items = _context.TBLCheckItems
+                        .Where(c => c.CreatedAt.Date == today)
+                        .OrderByDescending(c => c.CreatedAt)
+                        .ToList();
 
                     var cacheOptions = new MemoryCacheEntryOptions()
                         .SetSlidingExpiration(TimeSpan.FromMinutes(5));
 
                     _cache.Set(CacheKey, items, cacheOptions);
                 }
+
                 ViewBag.Items = items;
             }
 
-            return View();
+            return View(ViewBag.Items);
         }
+
 
         #region عملیات ثبت بررسی جدید
         [HttpGet]
@@ -68,13 +72,13 @@ namespace ITCheckList.Controllers
         {
             if (item == null)
             {
-                return Json(new { success = false, message = "اطلاعات ارسالی نامعتبر است." });
+                return Json(new { success = false, message = "اطلاعات ارسالی نامعتبر است.", type = "error" });
             }
 
             if (!ModelState.IsValid)
             {
                 var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
-                return Json(new { success = false, message = string.Join(" - ", errors) });
+                return Json(new { success = false, message = string.Join(" - ", errors), type = "warning" });
             }
 
             _context.TBLCheckItems.Add(item);
@@ -83,32 +87,8 @@ namespace ITCheckList.Controllers
             // حذف کش بعد از افزودن آیتم جدید
             _cache.Remove(CacheKey);
 
-            return Json(new { success = true, message = "ثبت با موفقیت انجام شد." });
+            return Json(new { success = true, message = "ثبت با موفقیت انجام شد.", type = "success" });
         }
-
-        //[HttpGet]
-        //public IActionResult Create()
-        //{
-        //    return PartialView("_Create", new TBL_CheckItem());
-        //}
-
-        //[HttpPost]
-        //public IActionResult Create(TBL_CheckItem item)
-        //{
-        //    if (ModelState.IsValid)
-        //    {
-        //        _context.TBLCheckItems.Add(item);
-        //        _context.SaveChanges();
-
-        //        // حذف کش بعد از افزودن
-        //        _cache.Remove(CacheKey);
-
-        //        return Json(new { success = true, message = "ثبت با موفقیت انجام شد." });
-        //    }
-
-        //    var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
-        //    return Json(new { success = false, message = string.Join(" - ", errors) });
-        //}
         #endregion
 
         #region عملیات ویرایش بررسی های جاری
@@ -398,15 +378,13 @@ namespace ITCheckList.Controllers
             DateTime today = DateTime.Now.Date;
             DateTime threeDaysAgo = today.AddDays(-3);
 
-            // دوباره بررسی وجود داده‌های قدیمی (1 تا 3 روز گذشته) که بایگانی نشده‌اند
             var unarchivedOldData = _context.TBLCheckItems
                 .Where(c => c.CreatedAt.Date >= threeDaysAgo && c.CreatedAt.Date < today)
                 .ToList();
 
             if (unarchivedOldData == null || unarchivedOldData.Count == 0)
             {
-                TempData["InfoMessage"] = "داده‌های قدیمی جهت بایگانی یافت نشد یا قبلاً بایگانی شده است.";
-                return RedirectToAction("Index");
+                return Json(new { success = false, message = "داده‌ای جهت بایگانی یافت نشد." });
             }
 
             foreach (var item in unarchivedOldData)
@@ -420,7 +398,7 @@ namespace ITCheckList.Controllers
                 if (existing != null)
                 {
                     existing.Note = item.Note;
-                    existing.Status = item.Status;
+                    existing.Status = true; // وضعیت به "انجام شد" تغییر داده می‌شود
                     existing.ArchivedAt = DateTime.Now;
                 }
                 else
@@ -431,21 +409,16 @@ namespace ITCheckList.Controllers
                         Description = item.Description,
                         CreatedAt = item.CreatedAt,
                         Note = item.Note,
-                        Status = item.Status,
+                        Status = true, // وضعیت به "انجام شد" تغییر داده می‌شود
                         ArchivedAt = DateTime.Now
                     });
                 }
             }
-
-            // حذف داده‌های بایگانی شده از جدول اصلی
             _context.TBLCheckItems.RemoveRange(unarchivedOldData);
             _context.SaveChanges();
-
-            // پاک‌سازی کش
             _cache.Remove(CacheKey);
 
-            TempData["SuccessMessage"] = "اطلاعات قدیمی با موفقیت بایگانی شدند.";
-            return RedirectToAction("Index");
+            return Json(new { success = true, message = "بایگانی با موفقیت انجام شد." });
         }
         #endregion
 
@@ -482,5 +455,6 @@ namespace ITCheckList.Controllers
         }
 
         #endregion
+
     }
 }

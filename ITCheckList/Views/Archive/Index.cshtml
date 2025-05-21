@@ -12,6 +12,7 @@
             <th>توضیحات</th>
             <th>وضعیت</th>
             <th>تاریخ بایگانی</th>
+            <th>عملیات</th>
         </tr>
     </thead>
     <tbody>
@@ -20,16 +21,19 @@
             int i = 1;
             foreach (var item in Model)
             {
-                <tr>
+                var rowClass = item.Status ? "" : "table-warning blink-row"; // کلاس چشمک‌زن فقط برای در حال اقدام
+
+                <tr class="@rowClass">
                     <td>@(i++)</td>
                     <td>@item.Section</td>
                     <td>@item.Description</td>
                     <td>@item.CreatedAt.ToString("yyyy/MM/dd")</td>
                     <td>@item.Note</td>
-                    <td>
-                        @(item.Status ? "انجام شد." : "در دست اقدام")
-                    </td>
+                    <td>@(item.Status ? "انجام شد." : "در دست اقدام")</td>
                     <td>@item.ArchivedAt.ToString("yyyy/MM/dd HH:mm")</td>
+                    <td>
+                        @(item.Status ? "اتمام کار" : "")
+                    </td>
                 </tr>
             }
         }

@@ -8,26 +8,20 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
 <!--=================================================================-->
-<!-- پیام‌های موفقیت یا اطلاعات -->
-@* @if (TempData["SuccessMessage"] != null)
-{
-    <div class="alert alert-success text-center">@TempData["SuccessMessage"]</div>
-} *@
-<!--=================================================================-->
-@if (hasUnarchivedOldData)
-{
-    <div class="alert alert-warning text-center mt-2">
-        <strong>توجه:</strong> اطلاعات بررسی‌نشده‌ای از 1 تا 3 روز گذشته در سیستم یافت شد.<br />
-        لطفاً ابتدا این اطلاعات را بایگانی کنید تا بتوانید از سیستم استفاده کنید.
-        <form asp-action="ArchivePreviousDayData" method="post" class="d-inline mt-2">
-            <button type="submit" class="btn btn-warning">بلی، لطفاً بایگانی شود</button>
-        </form>
-    </div>
-}
-<!--=================================================================-->
 @{
     var successMessage = TempData["SuccessMessage"] as string;
 }
+<!--=================================================================-->
+@if (hasUnarchivedOldData)
+{
+    <div class="alert alert-warning text-center mt-4">
+        <strong>توجه:</strong> اطلاعات 1 تا 3 روز گذشته هنوز بایگانی نشده‌اند.
+    </div>
+    <div class="text-center mt-3">
+        <button id="archiveOldDataBtn" class="btn btn-primary">بایگانی اطلاعات قدیمی</button>
+    </div>
+}
+
 <!--=================================================================-->
 @if (!string.IsNullOrEmpty(successMessage))
 {
@@ -82,7 +76,7 @@
                         rowClass = "table-warning";
                         if (!item.Status)
                         {
-                            rowClass += " pending-row-highlight"; // ← فقط وقتی Status=false
+                            rowClass += " pending-row-highlight"; // فقط وقتی Status=false
                         }
                     }
                     else
@@ -102,7 +96,11 @@
                             </span>
                         </td>
                         <td class="text-center">
-                            @if (!item.Status && !hasUnarchivedOldData)
+                            @if (item.Status)
+                            {
+                                <span class="text-success fw-bold">موفق</span>
+                            }
+                            else if (!item.Status && !hasUnarchivedOldData)
                             {
                                 <button class="btn btn-sm btn-outline-success btn-confirm-final" data-id="@item.Id">
                                     <i class="fas fa-check-circle fa-lg"></i>
@@ -183,6 +181,48 @@
     <script src="~/lib/exporttableprint.js" asp-append-version="true"></script>
     <script src="~/lib/data-loading.js" asp-append-version="true"></script>
     <!--=================================================================-->
+    <script>
+        $(document).ready(function () {
+            // فرض: در حالت قفل‌شده یک متغیر سرور به View پاس داده می‌شود
+            var shouldArchive = '@ViewBag.ShowArchivePrompt' === 'true';
+
+            if (shouldArchive) {
+                showArchivePromptAndExecute();
+            }
+        });
+    </script>
+    <!--=================================================================-->
+    <script>
+        $(document).on("click", "#archiveOldDataBtn", function () {
+            Swal.fire({
+                title: 'آیا مطمئن هستید؟',
+                text: "اطلاعات قدیمی بایگانی خواهند شد!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'بله، بایگانی کن',
+                cancelButtonText: 'انصراف'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.post("/Checklist/ArchivePreviousDayData", function (res) {
+                        if (res.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'موفق',
+                                text: res.message,
+                                timer: 2000,
+                                showConfirmButton: false
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire('خطا', res.message, 'error');
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+    <!--=================================================================-->
     <!--فراخوانی اسکریپت کد آجاکس مربوط به تأیید نهایی به صورت مستقیم-->
     <script>
         $(document).ready(function () {
@@ -262,8 +302,8 @@
 
             function showDailyReminder() {
                 const reminder = $('<div>')
-                    .addClass('daily-reminder')
-                    .html('⏰ هنوز آیتمی برای امروز ثبت یا انجام نشده است!')
+                    .addClass('daily-reminder warning daily-reminder-container')
+                    .html('.کاربرگرامی: تا به حال موضوعی برای امروز ثبت نشده است')
                     .hide()
                     .fadeIn(1000);
 
@@ -271,7 +311,7 @@
 
                 setTimeout(() => {
                     reminder.fadeOut(1500, () => reminder.remove());
-                }, 10000);
+                }, 7000);
             }
         });
     </script>
@@ -299,6 +339,7 @@
         })();
     </script>
     <!--=================================================================-->
+    <!--فراخوانی اسکریپت حالت چشمک زدن اطلاعات-->
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             const blinkingBadges = document.querySelectorAll(".blinking-badge");
@@ -311,6 +352,7 @@
         });
     </script>
     <!--=================================================================-->
+    <!--فراخوانی اسکریپت سفارشی سازی جدول-->
     <script>
         $(document).ready(function () {
             $('#reportTable').DataTable({
@@ -541,16 +583,20 @@
             $(document).on('submit', '#addChecklistForm', function (e) {
                 e.preventDefault();
                 $.ajax({
-                    url: '/Checklist/Create',
-                    type: 'POST',
-                    data: $(this).serialize(),
-                    success: function (result) {
-                        if (result.success) {
-                            $('#modalForm').modal('hide');
-                            Swal.fire("موفق!", result.message, "success").then(() => location.reload());
-                        } else {
-                            Swal.fire("خطا", result.message, "error");
+                    type: "POST",
+                    url: "/Checklist/Create",
+                    data: $("#create-form").serialize(),
+                    success: function (response) {
+                        showNotification(response.message, response.type);
+
+                        if (response.success) {
+                            // بروزرسانی جدول یا بستن مدال
+                            $("#createModal").modal("hide");
+                            reloadTable(); // اگر داری
                         }
+                    },
+                    error: function () {
+                        showNotification("خطا در ارتباط با سرور.", "error");
                     }
                 });
             });
