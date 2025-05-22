@@ -585,18 +585,38 @@
                 $.ajax({
                     type: "POST",
                     url: "/Checklist/Create",
-                    data: $("#create-form").serialize(),
+                    data: $(this).serialize(),
                     success: function (response) {
-                        showNotification(response.message, response.type);
-
                         if (response.success) {
-                            // بروزرسانی جدول یا بستن مدال
-                            $("#createModal").modal("hide");
-                            reloadTable(); // اگر داری
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'عملیات موفق',
+                                text: response.message,
+                                confirmButtonText: 'ثبت و بازگشت',
+                                //timer: 3000,
+                                //timerProgressBar: true
+                            }).then(() => {
+                                $('#modalForm').modal('hide');
+
+                                // اگر از DataTable با ajax استفاده می‌کنی:
+                                $('#reportTable').DataTable().ajax.reload(null, false); // بدون ریست شدن شماره صفحه
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'هشدار',
+                                text: response.message,
+                                confirmButtonText: 'باشه'
+                            });
                         }
                     },
                     error: function () {
-                        showNotification("خطا در ارتباط با سرور.", "error");
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'خطا',
+                            text: 'خطا در ارتباط با سرور.',
+                            confirmButtonText: 'باشه'
+                        });
                     }
                 });
             });
@@ -660,4 +680,11 @@
             });
         });
     </script>
+    <!--=================================================================-->
+    <script>
+            function reloadTable() {
+                $('#reportTable').DataTable().ajax.reload(null, false); // بدون رفرش صفحه
+        }
+    </script>
+    <!--=================================================================-->
 }
