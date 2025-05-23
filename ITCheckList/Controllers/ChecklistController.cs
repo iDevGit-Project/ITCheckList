@@ -83,9 +83,8 @@ namespace ITCheckList.Controllers
 
             _context.TBLCheckItems.Add(item);
             _context.SaveChanges();
-
-            // حذف کش بعد از افزودن آیتم جدید
-            _cache.Remove(CacheKey);
+            // پاک کردن کش پس از تغییر وضعیت
+            _cache.Remove("ChecklistItemsCache");
 
             return Json(new { success = true, message = "ثبت با موفقیت انجام شد.", type = "success" });
         }
@@ -121,8 +120,8 @@ namespace ITCheckList.Controllers
                 _context.Update(model);
                 await _context.SaveChangesAsync();
 
-                // حذف کش بعد از ویرایش
-                _cache.Remove(CacheKey);
+                // پاک کردن کش پس از تغییر وضعیت
+                _cache.Remove("ChecklistItemsCache");
 
                 TempData["SuccessMessage"] = "اطلاعات با موفقیت ویرایش شد.";
                 return RedirectToAction(nameof(Index));
@@ -135,60 +134,6 @@ namespace ITCheckList.Controllers
                 throw;
             }
         }
-
-        //public async Task<IActionResult> Edit(int? id)
-        //{
-        //    if (id == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    var item = await _context.TBLCheckItems.FindAsync(id);
-        //    if (item == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    return View(item);
-        //}
-
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public async Task<IActionResult> Edit(int id, TBL_CheckItem model)
-        //{
-        //    if (id != model.Id)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    if (ModelState.IsValid)
-        //    {
-        //        try
-        //        {
-        //            _context.Update(model);
-        //            await _context.SaveChangesAsync();
-
-        //            // حذف کش بعد از ویرایش
-        //            _cache.Remove(CacheKey);
-
-        //            TempData["SuccessMessage"] = "اطلاعات با موفقیت ویرایش شد.";
-
-        //            return RedirectToAction(nameof(Index));
-        //        }
-        //        catch (DbUpdateConcurrencyException)
-        //        {
-        //            if (!_context.TBLCheckItems.Any(e => e.Id == model.Id))
-        //            {
-        //                return NotFound();
-        //            }
-        //            else
-        //            {
-        //                throw;
-        //            }
-        //        }
-        //    }
-        //    return View(model);
-        //}
         #endregion
 
         #region عملیات حذف بررسی های جاری
@@ -202,8 +147,8 @@ namespace ITCheckList.Controllers
             _context.TBLCheckItems.Remove(item);
             await _context.SaveChangesAsync();  // حتماً باید باشه
 
-            // حذف کش بعد از حذف
-            _cache.Remove(CacheKey);
+            // پاک کردن کش پس از تغییر وضعیت
+            _cache.Remove("ChecklistItemsCache");
 
             return Json(new { success = true, message = "آیتم با موفقیت حذف شد." });
         }
@@ -416,7 +361,8 @@ namespace ITCheckList.Controllers
             }
             _context.TBLCheckItems.RemoveRange(unarchivedOldData);
             _context.SaveChanges();
-            _cache.Remove(CacheKey);
+            // پاک کردن کش پس از تغییر وضعیت
+            _cache.Remove("ChecklistItemsCache");
 
             return Json(new { success = true, message = "بایگانی با موفقیت انجام شد." });
         }
@@ -427,15 +373,20 @@ namespace ITCheckList.Controllers
         public IActionResult CheckTodayData()
         {
             var today = DateTime.Today;
-            var hasTodayData = _context.TBLCheckItems.Any(x => x.CreatedAt.Date == today);
 
-            // بررسی وضعیت مواردی که در وضعیت "در دست اقدام" هستند
-            var allPending = _context.TBLCheckItems
-                                .Where(x => x.CreatedAt.Date == today)
-                                .All(x => !x.Status);
+            // گرفتن همه آیتم‌های امروز
+            var todayItems = _context.TBLCheckItems
+                .Where(x => x.CreatedAt.Date == today)
+                .ToList();
+
+            bool hasTodayData = todayItems.Any();
+
+            // بررسی اینکه همه آیتم‌ها هنوز انجام نشده‌اند (در دست بررسی هستند)
+            bool allPending = hasTodayData && todayItems.All(x => x.Status == false);
 
             return Json(new { hasTodayData, allPending });
         }
+
         #endregion
 
         #region عملیات تأیید کردن مستقیم درخواست روز جاری بدون ورود به قسمت ویرایش
@@ -450,6 +401,8 @@ namespace ITCheckList.Controllers
 
             item.Status = true;
             _context.SaveChanges();
+            // پاک کردن کش پس از تغییر وضعیت
+            _cache.Remove("ChecklistItemsCache");
 
             return Json(new { success = true });
         }

@@ -254,13 +254,15 @@
                             data: { id: id },
                             success: function (response) {
                                 if (response.success) {
-                                    Swal.fire({
-                                        title: 'موفق!',
-                                        text: 'وضعیت آیتم به انجام‌شده تغییر یافت.',
-                                        icon: 'success',
-                                        timer: 2000,
-                                        showConfirmButton: false
-                                    });
+                                        Swal.fire({
+                                            title: 'موفق!',
+                                            text: 'وضعیت آیتم به انجام‌شده تغییر یافت.',
+                                            icon: 'success',
+                                            timer: 2000,
+                                            showConfirmButton: false
+                                        }).then(() => {
+                                            location.reload(); // رفرش کامل صفحه برای دریافت اطلاعات بروز
+                                        });
 
                                     // به‌روزرسانی UI
                                     row.find('.status-badge')
@@ -288,13 +290,13 @@
     <!--فراخوانی اسکریپت بررسی وضعیت روز جاری-->
     <script>
         $(document).ready(function () {
-            // فقط بین ساعت 10 تا 18 ظهر بررسی کن
             const now = new Date();
             const hour = now.getHours();
 
-            if (hour >= 10 && hour <= 18) {
+            // فقط بین ساعت 10 تا 17 بررسی کن
+            if (hour >= 11 && hour <= 17) {
                 $.get('/Checklist/CheckTodayData', function (response) {
-                    if (!response.hasTodayData || response.allPending) {
+                    if (!response.hasTodayData) {
                         showDailyReminder();
                     }
                 });
@@ -303,18 +305,19 @@
             function showDailyReminder() {
                 const reminder = $('<div>')
                     .addClass('daily-reminder warning daily-reminder-container')
-                    .html('.کاربرگرامی: تا به حال موضوعی برای امروز ثبت نشده است')
+                    .html('.کاربر گرامی: تا این لحظه هیچ موضوعی برای امروز ثبت نکرده‌اید')
                     .hide()
-                    .fadeIn(1000);
+                    .fadeIn(800);
 
                 $('body').append(reminder);
 
                 setTimeout(() => {
                     reminder.fadeOut(1500, () => reminder.remove());
-                }, 7000);
+                }, 5000);
             }
         });
     </script>
+
     <!--=================================================================-->
     <!--قفل کردن کلی سیستم با JavaScript (Overlay Blocker)-->
     <script>
@@ -393,12 +396,12 @@
                 .then(data => {
                     if (data.isEmpty) {
                         Swal.fire({
-                            icon: 'warning',
-                            title: 'جدول خالی است!',
+                            icon: 'error',
+                            title: '...داده ای یافت نشد',
                             html: '<div style="direction: rtl;">هیچ داده‌ای برای چاپ موجود نیست.</div>',
                             confirmButtonText: 'متوجه شدم',
                             customClass: {
-                                confirmButton: 'btn custom-btn btn-outline-primary',
+                                confirmButton: 'btn btn-success',
                             },
                         });
                     } else {
@@ -423,12 +426,12 @@
                 .then(data => {
                     if (data.isEmpty) {
                         Swal.fire({
-                            icon: 'warning',
+                            icon: 'error',
                             title: 'هشدار!',
                             html: '<div style="direction: rtl;">هیچ گزارشی جهت ارسال به بایگانی امروز وجود ندارد.</div>',
                             confirmButtonText: 'متوجه شدم',
                             customClass: {
-                                confirmButton: 'btn custom-btn btn-outline-primary',
+                                confirmButton: 'btn btn-success',
                             },
                         });
                     } else {
@@ -437,7 +440,7 @@
                             .then(pending => {
                                 if (pending.hasPending) {
                                     Swal.fire({
-                                        icon: 'warning',
+                                        icon: 'error',
                                         title: '!...هشدار',
                                         html: `
                                         <div class="custom-alert-content">
@@ -573,6 +576,8 @@
     <!--ثبت آیتم با نمایش SweetAlert-->
     <script>
         $(document).ready(function () {
+
+            // دکمه افزودن و باز کردن فرم در مودال
             $('#btnAdd').click(function () {
                 $.get('/Checklist/Create', function (data) {
                     $('#modalBody').html(data);
@@ -580,6 +585,7 @@
                 });
             });
 
+            // ارسال فرم به صورت Ajax
             $(document).on('submit', '#addChecklistForm', function (e) {
                 e.preventDefault();
                 $.ajax({
@@ -592,14 +598,12 @@
                                 icon: 'success',
                                 title: 'عملیات موفق',
                                 text: response.message,
-                                confirmButtonText: 'ثبت و بازگشت',
-                                //timer: 3000,
-                                //timerProgressBar: true
+                                confirmButtonText: 'ثبت و بازگشت'
                             }).then(() => {
                                 $('#modalForm').modal('hide');
 
-                                // اگر از DataTable با ajax استفاده می‌کنی:
-                                $('#reportTable').DataTable().ajax.reload(null, false); // بدون ریست شدن شماره صفحه
+                                // چون جدول Ajax نیست، از reload استفاده می‌کنیم
+                                location.reload(); // 🔁 رفرش کل صفحه
                             });
                         } else {
                             Swal.fire({
@@ -620,6 +624,7 @@
                     }
                 });
             });
+
         });
     </script>
     <!--=================================================================-->
@@ -679,12 +684,6 @@
                 }
             });
         });
-    </script>
-    <!--=================================================================-->
-    <script>
-            function reloadTable() {
-                $('#reportTable').DataTable().ajax.reload(null, false); // بدون رفرش صفحه
-        }
     </script>
     <!--=================================================================-->
 }

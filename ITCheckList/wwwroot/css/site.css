@@ -115,6 +115,29 @@ body {
         outline: none; /* حذف outline */
     }
 
+.custom-btn-danger {
+    border: none; /* حذف border */
+    border-radius: 8px; /* گوشه‌های گرد */
+    background-color: #D7000E; /* پس‌زمینه قرمز */
+    color: white; /* رنگ متن سفید */
+    padding: 10px 18px; /* تنظیم padding برای دکمه */
+    font-size: 14px; /* اندازه فونت */
+    font-weight: bold; /* ضخیم کردن فونت */
+    box-shadow: 0 4px 6px rgba(0, 123, 255, 0.2); /* سایه کم برای دکمه */
+    transition: background-color 0.3s ease, transform 0.3s ease; /* اضافه کردن افکت‌های انتقال */
+}
+
+.custom-btn-danger:hover {
+    background-color: #A5000A; /* تغییر پس‌زمینه در حالت hover */
+    transform: translateY(-2px); /* بالا بردن دکمه در حالت hover */
+    box-shadow: 0 6px 10px rgba(0, 123, 255, 0.3); /* افزایش سایه در حالت hover */
+    cursor: pointer; /* تغییر موس به pointer */
+}
+
+    .custom-btn-danger:focus {
+        outline: none; /* حذف outline */
+    }
+
 .custom-btn-success {
     border: none; /* حذف border */
     border-radius: 8px; /* گوشه‌های گرد */
@@ -527,9 +550,6 @@ select:focus {
     position: fixed;
     top: 1rem;
     left: 50%;
-/*    transform: translateX(-50%) translateY(-20px);
-    opacity: 0;
-    transition: opacity 0.4s ease-out, transform 0.4s ease-out;*/
     z-index: 9999;
     min-width: 300px;
     max-width: 600px;
@@ -573,13 +593,13 @@ select:focus {
         color: #FCFCFC;
     }
 
-    .daily-reminder.warning {
-        background-color: #FFD633;
-        color: #333;
-    }
+.daily-reminder.warning {
+    background-color: #FFBF5E;
+    color: #333;
+}
 
     .daily-reminder.info {
-        background-color: #0056B3;
+        background-color: #6600B3;
         color: #FCFCFC;
     }
 
