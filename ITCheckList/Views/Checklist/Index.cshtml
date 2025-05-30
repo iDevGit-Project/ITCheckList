@@ -665,6 +665,7 @@
     <script>
         $(document).on("click", ".btn-delete", function () {
             const id = $(this).data("id");
+
             Swal.fire({
                 title: "آیا از حذف اطلاعات مطمئن هستید؟",
                 text: ".بعد از حذف، اطلاعات قابل بازگشت نیست",
@@ -674,16 +675,45 @@
                 cancelButtonText: "انصراف"
             }).then((result) => {
                 if (result.isConfirmed) {
-                    $.post("/Checklist/Delete/" + id, function (res) {
-                        if (res.success) {
-                            Swal.fire("حذف شد", res.message, "success").then(() => location.reload());
-                        } else {
-                            Swal.fire("خطا", res.message, "error");
+                    $.ajax({
+                        url: "/Checklist/Delete",
+                        type: "POST",
+                        data: { id: id },
+                        success: function (res) {
+                            if (res.success) {
+                                Swal.fire("حذف شد", res.message, "success").then(() => location.reload());
+                            } else {
+                                Swal.fire("خطا", res.message, "error");
+                            }
+                        },
+                        error: function () {
+                            Swal.fire("خطا", "مشکلی در ارتباط با سرور به وجود آمد.", "error");
                         }
                     });
                 }
             });
         });
+        // $(document).on("click", ".btn-delete", function () {
+        //     const id = $(this).data("id");
+        //     Swal.fire({
+        //         title: "آیا از حذف اطلاعات مطمئن هستید؟",
+        //         text: ".بعد از حذف، اطلاعات قابل بازگشت نیست",
+        //         icon: "warning",
+        //         showCancelButton: true,
+        //         confirmButtonText: "بله، حذف کن",
+        //         cancelButtonText: "انصراف"
+        //     }).then((result) => {
+        //         if (result.isConfirmed) {
+        //             $.post("/Checklist/Delete/" + id, function (res) {
+        //                 if (res.success) {
+        //                     Swal.fire("حذف شد", res.message, "success").then(() => location.reload());
+        //                 } else {
+        //                     Swal.fire("خطا", res.message, "error");
+        //                 }
+        //             });
+        //         }
+        //     });
+        // });
     </script>
     <!--=================================================================-->
 }

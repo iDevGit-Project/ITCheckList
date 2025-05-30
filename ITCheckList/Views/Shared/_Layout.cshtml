@@ -12,7 +12,39 @@
     <link rel="preload" href="~/fonts/IRANYekanXFaNum-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
 
 </head>
+<!--=================================================================-->
+<!-- متد اطلاع رسانی در خصوص اجرای پروژه در هاست واقعی یا لوکال -->
+@using ITCheckList.Helpers
+@{
+    var envMessage = "";
+    var lastEnvShown = Context.Request.Cookies["EnvMsgLastShown"];
+    var now = DateTime.Now;
+
+    if (string.IsNullOrEmpty(lastEnvShown) ||
+        !DateTime.TryParse(lastEnvShown, out var lastTime) ||
+        (now - lastTime).TotalMinutes > 1)
+    {
+        envMessage = EnvironmentHelper.GetEnvironmentMessage(Context);
+
+        Context.Response.Cookies.Append("EnvMsgLastShown", now.ToString(), new CookieOptions
+                {
+                    Expires = now.AddMinutes(15),
+                    IsEssential = true
+                });
+    }
+}
+<!--=================================================================-->
 <body>
+<!--=================================================================-->
+    <!-- نمایش اطلاع رسانی در خصوص اجرای پروژه در هاست واقعی یا لوکال -->
+    @if (!string.IsNullOrEmpty(envMessage))
+    {
+        <div id="envReminder" class="alert alert-success text-dark text-center shadow-sm px-4 py-3 rounded-3"
+             style="position: fixed; top: 70px; left: 50%; transform: translateX(-50%); z-index: 1050; width: 60%; font-weight:900; color: #00796b; background-color:#d9efee; font-size: 15px; direction: rtl;">
+            @envMessage
+        </div>
+    }
+<!--=================================================================-->
     <div class="daily-reminder-container" id="notification-container"></div>
     <header dir="rtl">
         <nav class="navbar navbar-expand-sm navbar-light bg-light text-dark border-bottom box-shadow mb-3" dir="rtl">
@@ -52,10 +84,10 @@
             <div style="margin-top: 5px; font-weight: bold; color: #0b0b0b;">سیستم در حال بررسی اطلاعات...</div>
         </div>
     </header>
-
+    <!--=================================================================-->
+    <!-- Overlay و Spinner لودینگ مشترک -->
     <div class="container">
         <main role="main" class="pb-3">
-            <!-- Overlay و Spinner لودینگ مشترک -->
             <div id="globalOverlay" class="overlay-loading" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color: rgba(255,255,255,0.7); z-index:9999; text-align:center;">
                 <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%);">
                     <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
@@ -70,7 +102,7 @@
     <!--=================================================================-->
     <footer class="border-top footer bg-primary-custome text-white" dir="rtl">
         <div class="container">
-            بازرگانی، پزشکی دکتر متقی- 1404 - 2025
+            کلیه حقوق برای حامد شریعتی مهر محفوظ است.
         </div>
     </footer>
     <!--=================================================================-->
@@ -136,7 +168,18 @@
             }, 500);
         }
     </script>
-
+    <!--=================================================================-->
+    <script>
+        setTimeout(function () {
+            const el = document.getElementById('envReminder');
+            if (el) {
+                el.style.transition = "opacity 0.5s ease-out";
+                el.style.opacity = "0";
+                setTimeout(() => el.remove(), 500);
+            }
+        }, 5000); // مخفی شدن بعد از 10 ثانیه
+    </script>
+    <!--=================================================================-->
     <!-- اضافه کردن جاوااسکریپت Toastr -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" asp-append-version="true"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js" asp-append-version="true"></script>

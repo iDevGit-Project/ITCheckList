@@ -1,5 +1,6 @@
 ﻿using ITCheckList.Models;
 using ITCheckList.Models.Context;
+using ITCheckList.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -11,13 +12,15 @@ namespace ITCheckList.Controllers
     {
         private readonly AppDbContext _context;
         private readonly IMemoryCache _cache;
+        private readonly ILogService _logService;
 
         private const string CacheKey = "ChecklistItemsCache";
 
-        public ChecklistController(AppDbContext context, IMemoryCache cache)
+        public ChecklistController(AppDbContext context, IMemoryCache cache, ILogService logService)
         {
             _context = context;
             _cache = cache;
+            _logService = logService;
         }
         public IActionResult Index()
         {
@@ -59,7 +62,6 @@ namespace ITCheckList.Controllers
             return View(ViewBag.Items);
         }
 
-
         #region عملیات ثبت بررسی جدید
         [HttpGet]
         public IActionResult Create()
@@ -68,26 +70,60 @@ namespace ITCheckList.Controllers
         }
 
         [HttpPost]
-        public IActionResult Create(TBL_CheckItem item)
+        public async Task<IActionResult> Create(TBL_CheckItem item)
         {
             if (item == null)
             {
+                await _logService.LogAsync("ChecklistController", "Create", "ورودی خالی بود.");
                 return Json(new { success = false, message = "اطلاعات ارسالی نامعتبر است.", type = "error" });
             }
 
             if (!ModelState.IsValid)
             {
                 var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
-                return Json(new { success = false, message = string.Join(" - ", errors), type = "warning" });
+                var errorMessage = string.Join(" - ", errors);
+
+                await _logService.LogAsync("ChecklistController", "Create", $"مدل نامعتبر: {errorMessage}");
+                return Json(new { success = false, message = errorMessage, type = "warning" });
             }
 
             _context.TBLCheckItems.Add(item);
-            _context.SaveChanges();
-            // پاک کردن کش پس از تغییر وضعیت
+            await _context.SaveChangesAsync();
+
             _cache.Remove("ChecklistItemsCache");
+
+            await _logService.LogAsync("ChecklistController", "Create", "آیتم با موفقیت ثبت شد.", entityId: item.Id.ToString());
 
             return Json(new { success = true, message = "ثبت با موفقیت انجام شد.", type = "success" });
         }
+
+        //[HttpGet]
+        //public IActionResult Create()
+        //{
+        //    return PartialView("_Create", new TBL_CheckItem());
+        //}
+
+        //[HttpPost]
+        //public IActionResult Create(TBL_CheckItem item)
+        //{
+        //    if (item == null)
+        //    {
+        //        return Json(new { success = false, message = "اطلاعات ارسالی نامعتبر است.", type = "error" });
+        //    }
+
+        //    if (!ModelState.IsValid)
+        //    {
+        //        var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+        //        return Json(new { success = false, message = string.Join(" - ", errors), type = "warning" });
+        //    }
+
+        //    _context.TBLCheckItems.Add(item);
+        //    _context.SaveChanges();
+        //    // پاک کردن کش پس از تغییر وضعیت
+        //    _cache.Remove("ChecklistItemsCache");
+
+        //    return Json(new { success = true, message = "ثبت با موفقیت انجام شد.", type = "success" });
+        //}
         #endregion
 
         #region عملیات ویرایش بررسی های جاری
@@ -104,24 +140,30 @@ namespace ITCheckList.Controllers
             return View(item);
         }
 
-        // POST: Edit
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, TBL_CheckItem model)
         {
             if (id != model.Id)
+            {
+                await _logService.LogAsync("ChecklistController", "Edit", "شناسه ارسالی با مدل مطابقت ندارد.");
                 return NotFound();
+            }
 
             if (!ModelState.IsValid)
+            {
+                await _logService.LogAsync("ChecklistController", "Edit", "مدل نامعتبر بود.");
                 return View(model);
+            }
 
             try
             {
                 _context.Update(model);
                 await _context.SaveChangesAsync();
 
-                // پاک کردن کش پس از تغییر وضعیت
                 _cache.Remove("ChecklistItemsCache");
+
+                await _logService.LogAsync("ChecklistController", "Edit", "آیتم با موفقیت ویرایش شد.", entityId: model.Id.ToString());
 
                 TempData["SuccessMessage"] = "اطلاعات با موفقیت ویرایش شد.";
                 return RedirectToAction(nameof(Index));
@@ -129,29 +171,100 @@ namespace ITCheckList.Controllers
             catch (DbUpdateConcurrencyException)
             {
                 if (!_context.TBLCheckItems.Any(e => e.Id == model.Id))
+                {
+                    await _logService.LogAsync("ChecklistController", "Edit", "آیتم برای ویرایش یافت نشد.", entityId: model.Id.ToString());
                     return NotFound();
+                }
 
                 throw;
             }
         }
+
+
+        // POST: Edit
+
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //public async Task<IActionResult> Edit(int id, TBL_CheckItem model)
+        //{
+        //    if (id != model.Id)
+        //        return NotFound();
+
+        //    if (!ModelState.IsValid)
+        //        return View(model);
+
+        //    try
+        //    {
+        //        _context.Update(model);
+        //        await _context.SaveChangesAsync();
+
+        //        // پاک کردن کش پس از تغییر وضعیت
+        //        _cache.Remove("ChecklistItemsCache");
+
+        //        TempData["SuccessMessage"] = "اطلاعات با موفقیت ویرایش شد.";
+        //        return RedirectToAction(nameof(Index));
+        //    }
+        //    catch (DbUpdateConcurrencyException)
+        //    {
+        //        if (!_context.TBLCheckItems.Any(e => e.Id == model.Id))
+        //            return NotFound();
+
+        //        throw;
+        //    }
+        //}
         #endregion
 
         #region عملیات حذف بررسی های جاری
         [HttpPost]
         public async Task<IActionResult> Delete(int id)
         {
+            if (id <= 0)
+            {
+                await _logService.LogAsync("ChecklistController", "Delete", "شناسه حذف نامعتبر بود.", "N/A");
+                return Json(new { success = false, message = "شناسه معتبر نیست.", type = "error" });
+            }
+
             var item = await _context.TBLCheckItems.FindAsync(id);
             if (item == null)
-                return Json(new { success = false, message = "مورد یافت نشد." });
+            {
+                await _logService.LogAsync("ChecklistController", "Delete", $"آیتم با شناسه {id} یافت نشد.", id.ToString());
+                return Json(new { success = false, message = "مورد مورد نظر یافت نشد.", type = "warning" });
+            }
 
-            _context.TBLCheckItems.Remove(item);
-            await _context.SaveChangesAsync();  // حتماً باید باشه
+            try
+            {
+                _context.TBLCheckItems.Remove(item);
+                await _context.SaveChangesAsync();
 
-            // پاک کردن کش پس از تغییر وضعیت
-            _cache.Remove("ChecklistItemsCache");
+                // پاک کردن کش پس از حذف
+                _cache.Remove("ChecklistItemsCache");
 
-            return Json(new { success = true, message = "آیتم با موفقیت حذف شد." });
+                await _logService.LogAsync("ChecklistController", "Delete", "آیتم با موفقیت حذف شد.", id.ToString());
+
+                return Json(new { success = true, message = "آیتم با موفقیت حذف شد.", type = "success" });
+            }
+            catch (Exception ex)
+            {
+                await _logService.LogAsync("ChecklistController", "Delete", $"خطا در حذف آیتم: {ex.Message}", id.ToString());
+                return Json(new { success = false, message = "خطایی در حذف اطلاعات رخ داد.", type = "error" });
+            }
         }
+
+        //[HttpPost]
+        //public async Task<IActionResult> Delete(int id)
+        //{
+        //    var item = await _context.TBLCheckItems.FindAsync(id);
+        //    if (item == null)
+        //        return Json(new { success = false, message = "مورد یافت نشد." });
+
+        //    _context.TBLCheckItems.Remove(item);
+        //    await _context.SaveChangesAsync();  // حتماً باید باشه
+
+        //    // پاک کردن کش پس از تغییر وضعیت
+        //    _cache.Remove("ChecklistItemsCache");
+
+        //    return Json(new { success = true, message = "آیتم با موفقیت حذف شد." });
+        //}
         #endregion
 
         #region متد های مربوط به عملیات آرشیو کردن اطلاعات

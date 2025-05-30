@@ -8,6 +8,7 @@ namespace ITCheckList.Models.Context
 
         public DbSet<TBL_CheckItem> TBLCheckItems { get; set; }
         public DbSet<TBL_CheckItemArchive> TBLCheckItemArchives { get; set; }
+        public DbSet<TBL_LogEntry> TBLLogEntries { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

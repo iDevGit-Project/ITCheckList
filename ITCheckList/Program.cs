@@ -1,4 +1,7 @@
-﻿using ITCheckList.Models.Context;
+﻿using ITCheckList.Models;
+using ITCheckList.Models.Context;
+using ITCheckList.Services;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,7 +16,18 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // در متد ConfigureServices یا قبل از Build
 builder.Services.AddMemoryCache();         // فعال کردن In-Memory Cache
 builder.Services.AddResponseCaching();     // فعال کردن Response Caching
+builder.Services.AddScoped<TBL_LogEntry>();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ILogService, LogService>();
 
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+
+    // اگر در محیط داخلی هستی و فقط از localhost استفاده می‌کنی، این خط را باز کن:
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
 
 var app = builder.Build();
 
@@ -25,9 +39,12 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
+// حتما قبل از app.UseRouting()
+app.UseForwardedHeaders();
 app.UseRouting();
 
 app.UseAuthorization();
