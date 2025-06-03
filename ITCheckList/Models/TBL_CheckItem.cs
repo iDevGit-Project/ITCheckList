@@ -16,6 +16,8 @@ namespace ITCheckList.Models
 
         public string? Note { get; set; }
 
+        public string? Duration { get; set; } // ذخیره زمان به صورت MM:SS
+
         public DateTime CreatedAt { get; set; } = DateTime.Now;
     }
 }

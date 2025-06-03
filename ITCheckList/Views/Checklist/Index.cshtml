@@ -93,6 +93,10 @@
                         <td class="text-center">
                             <span class="d-block rounded-2 px-2 py-1 status-badge @(item.Status ? "status-done" : "status-pending blinking-badge")">
                                 @(item.Status ? "انجام شد." : "در دست اقدام.")
+                                @if (!item.Status)
+                                {
+                                    <span id="timer-@item.Id" data-start="@item.CreatedAt.ToString("o")" class="fw-bold text-dark"></span>
+                                }
                             </span>
                         </td>
                         <td class="text-center">
@@ -123,6 +127,70 @@
                 }
             }
         </tbody>
+
+@*         <tbody>
+            @if (items != null)
+            {
+                int i = 1;
+                foreach (var item in items)
+                {
+                    var rowClass = "";
+                    var isOldUnarchived = (DateTime.Now.Date - item.CreatedAt.Date).Days >= 1 &&
+                    (DateTime.Now.Date - item.CreatedAt.Date).Days <= 3 &&
+                    hasUnarchivedOldData;
+                    if (isOldUnarchived)
+                    {
+                        rowClass = "table-warning";
+                        if (!item.Status)
+                        {
+                            rowClass += " pending-row-highlight"; // فقط وقتی Status=false
+                        }
+                    }
+                    else
+                    {
+                        rowClass = item.Status ? "done-row" : "pending-row-highlight";
+                    }
+
+                    <tr class="@rowClass">
+                        <td>@(i++)</td>
+                        <td class="text-end">@item.Section</td>
+                        <td class="text-end">@item.Description</td>
+                        <td>@item.CreatedAt.ToString("yyyy/MM/dd")</td>
+                        <td class="text-end">@item.Note</td>
+                        <td class="text-center">
+                            <span class="d-block rounded-2 px-2 py-1 status-badge @(item.Status ? "status-done" : "status-pending blinking-badge")">
+                                @(item.Status ? "انجام شد." : "در دست اقدام.")
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            @if (item.Status)
+                            {
+                                <span class="text-success fw-bold">موفق</span>
+                            }
+                            else if (!item.Status && !hasUnarchivedOldData)
+                            {
+                                <button class="btn btn-sm btn-outline-success btn-confirm-final" data-id="@item.Id">
+                                    <i class="fas fa-check-circle fa-lg"></i>
+                                </button>
+
+                                <a asp-controller="Checklist" asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-warning">
+                                    <i class="fas fa-edit fa-lg"></i>
+                                </a>
+
+                                <button class="btn btn-sm btn-outline-danger btn-delete" data-id="@item.Id">
+                                    <i class="fas fa-trash-alt fa-lg"></i>
+                                </button>
+                            }
+                            else if (hasUnarchivedOldData)
+                            {
+                                <span class="text-muted">غیرفعال</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            }
+        
+        </tbody> *@
     </table>
 
     <!--=================================================================-->
@@ -180,6 +248,50 @@
     <!--فراخوانی اسکریپت خروجی گزارش از اطلاعات-->
     <script src="~/lib/exporttableprint.js" asp-append-version="true"></script>
     <script src="~/lib/data-loading.js" asp-append-version="true"></script>
+    <!--=================================================================-->
+    <!--فراخوانی اسکریپت نمایش تایمر در کنار "در دست اقدام"-->
+    <script>
+        function updateTimers() {
+            const elements = document.querySelectorAll('[id^="timer-"]');
+            const now = new Date();
+
+            elements.forEach(function (el) {
+                const start = el.dataset.start;
+                if (!start) return;
+
+                const startTime = new Date(start);
+                const diffInSeconds = Math.floor((now - startTime) / 1000);
+
+                const minutes = String(Math.floor(diffInSeconds / 60)).padStart(2, '0');
+                const seconds = String(diffInSeconds % 60).padStart(2, '0');
+
+                el.textContent = `${minutes}:${seconds}`;
+            });
+        }
+
+        // اجرای اولیه
+        document.addEventListener("DOMContentLoaded", function () {
+            updateTimers();
+            setInterval(updateTimers, 1000);
+        });
+    </script>
+@*     <script>
+        function updateTimers() {
+            document.querySelectorAll('[id^="timer-"]').forEach(function (el) {
+                const startTime = new Date(el.dataset.start);
+                const now = new Date();
+                const diff = Math.floor((now - startTime) / 1000);
+
+                const minutes = Math.floor(diff / 60).toString().padStart(2, '0');
+                const seconds = (diff % 60).toString().padStart(2, '0');
+
+                el.textContent = `${minutes}:${seconds}`;
+            });
+        }
+
+        setInterval(updateTimers, 1000);
+        document.addEventListener("DOMContentLoaded", updateTimers);
+    </script> *@
     <!--=================================================================-->
     <script>
         $(document).ready(function () {

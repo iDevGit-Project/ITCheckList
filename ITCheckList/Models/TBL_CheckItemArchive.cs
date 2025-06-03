@@ -9,6 +9,7 @@
         public string Note { get; set; }
         public bool Status { get; set; }
         public DateTime ArchivedAt { get; set; } // زمان بایگانی
+        public string? Duration { get; set; } // زمان صرف‌شده به صورت رشته‌ای مثل "01:45"
     }
 
 }

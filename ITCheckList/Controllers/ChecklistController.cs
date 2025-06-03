@@ -158,6 +158,16 @@ namespace ITCheckList.Controllers
 
             try
             {
+                var existingItem = await _context.TBLCheckItems.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+                if (existingItem == null)
+                {
+                    return NotFound();
+                }
+
+                // مقدار CreatedAt و DurationInSeconds را حفظ می‌کنیم
+                model.CreatedAt = existingItem.CreatedAt;
+                //model.DurationInSeconds = existingItem.DurationInSeconds;
+
                 _context.Update(model);
                 await _context.SaveChangesAsync();
 
@@ -179,6 +189,7 @@ namespace ITCheckList.Controllers
                 throw;
             }
         }
+
 
 
         // POST: Edit
@@ -275,6 +286,7 @@ namespace ITCheckList.Controllers
             {
                 var today = DateTime.Today;
 
+                // گرفتن آیتم‌های امروز که وضعیت آنها "انجام شده" است
                 var todayItems = await _context.TBLCheckItems
                     .Where(x => x.CreatedAt.Date == today && x.Status == true)
                     .ToListAsync();
@@ -284,16 +296,19 @@ namespace ITCheckList.Controllers
                     return BadRequest("موردی برای بایگانی یافت نشد.");
                 }
 
+                // گرفتن آیتم‌های بایگانی شده امروز
                 var archivedItemsToday = await _context.TBLCheckItemArchives
                     .Where(x => x.CreatedAt.Date == today)
                     .ToListAsync();
 
+                // انتخاب آیتم‌هایی که هنوز بایگانی نشده‌اند (مقایسه با آرشیو امروز)
                 var itemsToArchive = todayItems
                     .Where(item => !archivedItemsToday.Any(a =>
                         a.Section == item.Section &&
                         a.Description == item.Description &&
                         a.Note == item.Note &&
-                        a.Status == item.Status))
+                        a.Status == item.Status &&
+                        a.Duration == item.Duration)) // اضافه کردن Duration به شرط مقایسه
                     .ToList();
 
                 if (!itemsToArchive.Any())
@@ -301,13 +316,16 @@ namespace ITCheckList.Controllers
                     return BadRequest("تمام موارد امروز قبلاً در بایگانی ثبت شده‌اند.");
                 }
 
+                // آماده‌سازی داده‌های آرشیو با اضافه کردن Duration و زمان آرشیو
                 var archiveItems = itemsToArchive.Select(x => new TBL_CheckItemArchive
                 {
                     Section = x.Section,
                     Description = x.Description,
                     CreatedAt = x.CreatedAt,
                     Note = x.Note,
-                    Status = x.Status
+                    Status = x.Status,
+                    Duration = x.Duration,         // اضافه شده
+                    ArchivedAt = DateTime.Now      // زمان آرشیو
                 }).ToList();
 
                 await _context.TBLCheckItemArchives.AddRangeAsync(archiveItems);
@@ -319,7 +337,7 @@ namespace ITCheckList.Controllers
 
                 await _context.SaveChangesAsync();
 
-                // حذف کش بعد از آرشیو (که احتمالا داده‌ها تغییر کرده‌اند)
+                // حذف کش بعد از آرشیو
                 _cache.Remove(CacheKey);
 
                 return Ok("بایگانی با موفقیت انجام شد.");
@@ -329,6 +347,68 @@ namespace ITCheckList.Controllers
                 return StatusCode(500, "خطا در بایگانی: " + ex.Message);
             }
         }
+
+        //[HttpPost]
+        //public async Task<IActionResult> ArchiveToday(bool deleteAfterArchive = false)
+        //{
+        //    try
+        //    {
+        //        var today = DateTime.Today;
+
+        //        var todayItems = await _context.TBLCheckItems
+        //            .Where(x => x.CreatedAt.Date == today && x.Status == true)
+        //            .ToListAsync();
+
+        //        if (!todayItems.Any())
+        //        {
+        //            return BadRequest("موردی برای بایگانی یافت نشد.");
+        //        }
+
+        //        var archivedItemsToday = await _context.TBLCheckItemArchives
+        //            .Where(x => x.CreatedAt.Date == today)
+        //            .ToListAsync();
+
+        //        var itemsToArchive = todayItems
+        //            .Where(item => !archivedItemsToday.Any(a =>
+        //                a.Section == item.Section &&
+        //                a.Description == item.Description &&
+        //                a.Note == item.Note &&
+        //                a.Status == item.Status))
+        //            .ToList();
+
+        //        if (!itemsToArchive.Any())
+        //        {
+        //            return BadRequest("تمام موارد امروز قبلاً در بایگانی ثبت شده‌اند.");
+        //        }
+
+        //        var archiveItems = itemsToArchive.Select(x => new TBL_CheckItemArchive
+        //        {
+        //            Section = x.Section,
+        //            Description = x.Description,
+        //            CreatedAt = x.CreatedAt,
+        //            Note = x.Note,
+        //            Status = x.Status
+        //        }).ToList();
+
+        //        await _context.TBLCheckItemArchives.AddRangeAsync(archiveItems);
+
+        //        if (deleteAfterArchive)
+        //        {
+        //            _context.TBLCheckItems.RemoveRange(itemsToArchive);
+        //        }
+
+        //        await _context.SaveChangesAsync();
+
+        //        // حذف کش بعد از آرشیو (که احتمالا داده‌ها تغییر کرده‌اند)
+        //        _cache.Remove(CacheKey);
+
+        //        return Ok("بایگانی با موفقیت انجام شد.");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, "خطا در بایگانی: " + ex.Message);
+        //    }
+        //}
 
         [HttpGet]
         public async Task<JsonResult> CheckPreviousDayData()
@@ -504,7 +584,7 @@ namespace ITCheckList.Controllers
 
         #region عملیات تأیید کردن مستقیم درخواست روز جاری بدون ورود به قسمت ویرایش
         [HttpPost]
-        public JsonResult ConfirmFinal(int id)
+        public async Task<JsonResult> ConfirmFinal(int id)
         {
             var item = _context.TBLCheckItems.FirstOrDefault(x => x.Id == id);
             if (item == null)
@@ -512,13 +592,104 @@ namespace ITCheckList.Controllers
                 return Json(new { success = false, message = "آیتم مورد نظر یافت نشد." });
             }
 
+            // محاسبه مدت زمان سپری شده از زمان شروع تا الان
+            TimeSpan duration = DateTime.Now - item.CreatedAt;
+            string durationFormatted = $"{duration.Minutes:D2}:{duration.Seconds:D2}";
+
+            // ذخیره مدت زمان در مدل
             item.Status = true;
-            _context.SaveChanges();
+            item.Duration = durationFormatted;
+
+            await _context.SaveChangesAsync();
+
+            // ثبت لاگ با زمان سپری شده
+            await _logService.LogAsync(
+                controller: "Checklist",
+                action: "ConfirmFinal",
+                description: $"آیتم با موفقیت تأیید نهایی شد. مدت زمان سپری شده: {durationFormatted}",
+                entityId: item.Id.ToString()
+            );
+
             // پاک کردن کش پس از تغییر وضعیت
             _cache.Remove("ChecklistItemsCache");
 
             return Json(new { success = true });
         }
+
+        //[HttpPost]
+        //public async Task<JsonResult> ConfirmFinal(int id)
+        //{
+        //    var item = await _context.TBLCheckItems.FirstOrDefaultAsync(x => x.Id == id);
+        //    if (item == null)
+        //    {
+        //        return Json(new { success = false, message = "آیتم مورد نظر یافت نشد." });
+        //    }
+
+        //    if (!item.Status)
+        //    {
+        //        var duration = DateTime.Now - item.CreatedAt;
+        //        var formatted = $"{(int)duration.TotalMinutes:D2}:{duration.Seconds:D2}";
+
+        //        item.Status = true;
+        //        item.Duration = formatted;
+
+        //        await _context.SaveChangesAsync();
+
+        //        _cache.Remove("ChecklistItemsCache");
+
+        //        // ثبت در لاگ
+        //        await _logService.LogAsync(
+        //            controller: "Checklist",
+        //            action: "ConfirmFinal",
+        //            description: $"آیتم با شناسه {id} نهایی شد. مدت زمان: {formatted}",
+        //            entityId: id.ToString()
+        //        );
+
+        //        // ثبت در آرشیو (در صورت وجود متد مرتبط ارسال کن تا اون رو هم اصلاح کنیم)
+        //    }
+
+        //    return Json(new { success = true });
+        //}
+
+        //[HttpPost]
+        //public JsonResult ConfirmFinal(int id)
+        //{
+        //    var item = _context.TBLCheckItems.FirstOrDefault(x => x.Id == id);
+        //    if (item == null)
+        //    {
+        //        return Json(new { success = false, message = "آیتم مورد نظر یافت نشد." });
+        //    }
+
+        //    item.Status = true;
+
+        //    // محاسبه و ثبت زمان سپری شده به ثانیه
+        //    var duration = (DateTime.Now - item.CreatedAt).TotalSeconds;
+        //    item.DurationInSeconds = (int)duration;
+
+        //    _context.SaveChanges();
+
+        //    // پاک کردن کش پس از تغییر وضعیت
+        //    _cache.Remove("ChecklistItemsCache");
+
+        //    return Json(new { success = true });
+        //}
+
+        //[HttpPost]
+        //public JsonResult ConfirmFinal(int id)
+        //{
+        //    var item = _context.TBLCheckItems.FirstOrDefault(x => x.Id == id);
+        //    if (item == null)
+        //    {
+        //        return Json(new { success = false, message = "آیتم مورد نظر یافت نشد." });
+        //    }
+
+        //    item.Status = true;
+        //    _context.SaveChanges();
+        //    // پاک کردن کش پس از تغییر وضعیت
+        //    _cache.Remove("ChecklistItemsCache");
+
+        //    return Json(new { success = true });
+        //}
 
         #endregion
 
