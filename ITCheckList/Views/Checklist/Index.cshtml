@@ -53,10 +53,10 @@
         <thead class="table-light">
             <tr>
                 <th class="text-center">ردیف</th>
-                <th class="text-end">بخش</th>
-                <th class="text-end">موضوع</th>
+                <th class="text-center">بخش</th>
+                <th class="text-center">موضوع</th>
                 <th class="text-center">تاریخ</th>
-                <th class="text-end">توضیحات</th>
+                <th class="text-center">توضیحات</th>
                 <th class="text-center">وضعیت</th>
                 <th class="text-center">عملیات</th>
             </tr>
@@ -126,71 +126,8 @@
                     </tr>
                 }
             }
-        </tbody>
-
-@*         <tbody>
-            @if (items != null)
-            {
-                int i = 1;
-                foreach (var item in items)
-                {
-                    var rowClass = "";
-                    var isOldUnarchived = (DateTime.Now.Date - item.CreatedAt.Date).Days >= 1 &&
-                    (DateTime.Now.Date - item.CreatedAt.Date).Days <= 3 &&
-                    hasUnarchivedOldData;
-                    if (isOldUnarchived)
-                    {
-                        rowClass = "table-warning";
-                        if (!item.Status)
-                        {
-                            rowClass += " pending-row-highlight"; // فقط وقتی Status=false
-                        }
-                    }
-                    else
-                    {
-                        rowClass = item.Status ? "done-row" : "pending-row-highlight";
-                    }
-
-                    <tr class="@rowClass">
-                        <td>@(i++)</td>
-                        <td class="text-end">@item.Section</td>
-                        <td class="text-end">@item.Description</td>
-                        <td>@item.CreatedAt.ToString("yyyy/MM/dd")</td>
-                        <td class="text-end">@item.Note</td>
-                        <td class="text-center">
-                            <span class="d-block rounded-2 px-2 py-1 status-badge @(item.Status ? "status-done" : "status-pending blinking-badge")">
-                                @(item.Status ? "انجام شد." : "در دست اقدام.")
-                            </span>
-                        </td>
-                        <td class="text-center">
-                            @if (item.Status)
-                            {
-                                <span class="text-success fw-bold">موفق</span>
-                            }
-                            else if (!item.Status && !hasUnarchivedOldData)
-                            {
-                                <button class="btn btn-sm btn-outline-success btn-confirm-final" data-id="@item.Id">
-                                    <i class="fas fa-check-circle fa-lg"></i>
-                                </button>
-
-                                <a asp-controller="Checklist" asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-warning">
-                                    <i class="fas fa-edit fa-lg"></i>
-                                </a>
-
-                                <button class="btn btn-sm btn-outline-danger btn-delete" data-id="@item.Id">
-                                    <i class="fas fa-trash-alt fa-lg"></i>
-                                </button>
-                            }
-                            else if (hasUnarchivedOldData)
-                            {
-                                <span class="text-muted">غیرفعال</span>
-                            }
-                        </td>
-                    </tr>
-                }
-            }
         
-        </tbody> *@
+        </tbody>
     </table>
 
     <!--=================================================================-->
@@ -275,23 +212,6 @@
             setInterval(updateTimers, 1000);
         });
     </script>
-@*     <script>
-        function updateTimers() {
-            document.querySelectorAll('[id^="timer-"]').forEach(function (el) {
-                const startTime = new Date(el.dataset.start);
-                const now = new Date();
-                const diff = Math.floor((now - startTime) / 1000);
-
-                const minutes = Math.floor(diff / 60).toString().padStart(2, '0');
-                const seconds = (diff % 60).toString().padStart(2, '0');
-
-                el.textContent = `${minutes}:${seconds}`;
-            });
-        }
-
-        setInterval(updateTimers, 1000);
-        document.addEventListener("DOMContentLoaded", updateTimers);
-    </script> *@
     <!--=================================================================-->
     <script>
         $(document).ready(function () {
@@ -304,6 +224,7 @@
         });
     </script>
     <!--=================================================================-->
+    <!--فراخوانی اسکریپت نمایش جهت بایگانی اطلاعات قدیمی"-->
     <script>
         $(document).on("click", "#archiveOldDataBtn", function () {
             Swal.fire({
@@ -429,7 +350,6 @@
             }
         });
     </script>
-
     <!--=================================================================-->
     <!--قفل کردن کلی سیستم با JavaScript (Overlay Blocker)-->
     <script>
@@ -501,6 +421,7 @@
         });
     </script>
     <!--=================================================================-->
+    <!--فراخوانی اسکریپت عدم نمایش چاپ-->
     <script>
         document.getElementById("btnPrintTable")?.addEventListener("click", function () {
             fetch('/Checklist/IsCheckItemTableEmpty')
@@ -531,6 +452,7 @@
         });
     </script>
     <!--=================================================================-->
+    <!--فراخوانی اسکریپت بایگانی داده های روز جاری-->
     <script>
         document.getElementById("btnArchiveToday")?.addEventListener("click", function () {
             fetch('/Checklist/IsCheckItemTableEmpty')
@@ -603,6 +525,7 @@
         });
     </script>
     <!--=================================================================-->
+    <!--فراخوانی اسکریپت حذف اطلاعات جدول بعد از بایگانی داده های روز جاری-->
     <script>
         function archiveToday(deleteAfter) {
             fetch(`/Checklist/ArchiveToday?deleteAfterArchive=${deleteAfter}`, {
@@ -634,6 +557,7 @@
         }
     </script>
     <!--=================================================================-->
+    <!--فراخوانی اسکریپت نمایش بنر مربوط به موفقیت آمیز بودن اطلاعات-->
     <script>
         $(document).ready(function () {
             var successMessage = '@TempData["SuccessMessage"]';

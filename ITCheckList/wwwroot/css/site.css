@@ -162,7 +162,7 @@ body {
     }
 
 .custom-toast-success {
-    background-color: #0056B3 !important; /* رنگ پس‌زمینه */
+    background-color: #19B700 !important; /* رنگ پس‌زمینه */
     color: white !important; /* رنگ متن */
     direction: rtl; /* جهت متن راست به چپ */
     text-align: right; /* چیدمان متن راست‌چین */
@@ -603,3 +603,10 @@ select:focus {
         color: #FCFCFC;
     }
 
+.env-banner {
+    font-weight: bold;
+    font-size: 0.9rem;
+    border-bottom: 2px solid #ddd;
+    z-index: 9999;
+    position: relative;
+}

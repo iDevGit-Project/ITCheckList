@@ -53,17 +53,18 @@
 
         const printStyle = `
             @font-face {
-                font-family: 'IRANYekan';
+                font-family: 'IRANYekanXFaNum';
                 src: url('/fonts/IRANYekanXFaNum-Regular.woff2') format('truetype');
             }
             body {
                 direction: rtl;
-                font-family: 'IRANYekan', sans-serif;
+                font-family: 'IRANYekanXFaNum';
             }
             .print-header {
                 text-align: center;
                 font-size: 18px;
                 margin-bottom: 5px;
+                font-family: 'IRANYekanXFaNum';
                 font-weight: bold;
             }
             .print-subtitle {

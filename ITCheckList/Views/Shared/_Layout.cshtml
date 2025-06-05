@@ -16,32 +16,50 @@
 <!-- متد اطلاع رسانی در خصوص اجرای پروژه در هاست واقعی یا لوکال -->
 @using ITCheckList.Helpers
 @{
-    var envMessage = "";
-    var lastEnvShown = Context.Request.Cookies["EnvMsgLastShown"];
     var now = DateTime.Now;
 
+    var lastEnvShown = Context.Request.Cookies["EnvMsgLastShown"];
     if (string.IsNullOrEmpty(lastEnvShown) ||
         !DateTime.TryParse(lastEnvShown, out var lastTime) ||
         (now - lastTime).TotalMinutes > 1)
     {
-        envMessage = EnvironmentHelper.GetEnvironmentMessage(Context);
-
         Context.Response.Cookies.Append("EnvMsgLastShown", now.ToString(), new CookieOptions
                 {
                     Expires = now.AddMinutes(15),
                     IsEssential = true
                 });
     }
+
+    var isLocal = EnvironmentHelper.IsLocal(Context);
+    var envMessage = EnvironmentHelper.GetEnvironmentMessage(Context);
+    var envClass = EnvironmentHelper.GetEnvironmentBadgeClass(Context);
 }
 <!--=================================================================-->
 <body>
 <!--=================================================================-->
-    <!-- نمایش اطلاع رسانی در خصوص اجرای پروژه در هاست واقعی یا لوکال -->
-    @if (!string.IsNullOrEmpty(envMessage))
+    @inject IWebHostEnvironment Env
+
+    @{
+        var showBanner = !Env.IsDevelopment();
+        var bannerClass = "";
+        var bannerText = "";
+
+        if (Env.IsStaging())
+        {
+            bannerClass = "bg-warning text-dark";
+            bannerText = "⚠️ شما در حال مشاهده محیط Staging هستید. تغییرات نهایی ممکن است پایدار نباشند.";
+        }
+        else if (Env.IsProduction())
+        {
+            bannerClass = "bg-danger text-white";
+            bannerText = "🛑 شما در حال مشاهده محیط Production هستید. هر تغییری باید با احتیاط انجام شود.";
+        }
+    }
+
+    @if (showBanner)
     {
-        <div id="envReminder" class="alert alert-success text-dark text-center shadow-sm px-4 py-3 rounded-3"
-             style="position: fixed; top: 70px; left: 50%; transform: translateX(-50%); z-index: 1050; width: 60%; font-weight:900; color: #00796b; background-color:#d9efee; font-size: 15px; direction: rtl;">
-            @envMessage
+        <div class="env-banner alert @bannerClass text-center m-0 p-2" dir="rtl">
+            @bannerText
         </div>
     }
 <!--=================================================================-->
@@ -100,11 +118,18 @@
         </main>
     </div>
     <!--=================================================================-->
-    <footer class="border-top footer bg-primary-custome text-white" dir="rtl">
-        <div class="container">
-            کلیه حقوق برای حامد شریعتی مهر محفوظ است.
+    <footer class="border-top footer bg-light text-dark" dir="rtl">
+        <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+            <div class="text-center text-md-start">
+                کلیه حقوق برای <span class="fw-bold">حامد شریعتی مهر</span> محفوظ است.
+            </div>
+            <div class="d-flex gap-2 flex-wrap justify-content-center">
+                <span id="env-status" class="badge w-bold p-2 @envClass">بستر پروژه: <span class="text-dark">@envMessage</span></span>
+                <span id="internet-status" class="badge bg-secondary">بررسی اتصال...</span>
+            </div>
         </div>
     </footer>
+
     <!--=================================================================-->
     <script src="~/lib/jquery/dist/jquery.min.js" asp-append-version="true"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js" asp-append-version="true"></script>
@@ -178,6 +203,24 @@
                 setTimeout(() => el.remove(), 500);
             }
         }, 5000); // مخفی شدن بعد از 10 ثانیه
+    </script>
+    <!--=================================================================-->
+    <script>
+        function updateInternetStatus() {
+            const badge = document.getElementById('internet-status');
+            const isOnline = navigator.onLine;
+            if (navigator.onLine) {
+                badge.textContent = 'ارتباط: آنلاین';
+                badge.className = 'badge fw-normal p-2 bg-success';
+            } else {
+                badge.textContent = 'ارتباط: آفلاین';
+                badge.className = 'badge fw-normal p-2 bg-danger';
+            }
+        }
+
+        window.addEventListener('online', updateInternetStatus);
+        window.addEventListener('offline', updateInternetStatus);
+        document.addEventListener('DOMContentLoaded', updateInternetStatus);
     </script>
     <!--=================================================================-->
     <!-- اضافه کردن جاوااسکریپت Toastr -->
