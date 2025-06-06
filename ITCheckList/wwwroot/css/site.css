@@ -1,18 +1,25 @@
-﻿@font-face {
+﻿/* فونت فارسی */
+@font-face {
     font-family: 'IRANYekanXFaNum-Regular';
     src: url('/fonts/IRANYekanXFaNum-Regular.woff2') format('woff2');
+    font-display: swap;
+}
+/* فونت انگلیسی */
+@font-face {
+    font-family: 'SFProAuto';
+    src: url('/fonts/en-ft/woff2/SFProDisplay-Regular.woff2') format('woff2');
     font-display: swap;
 }
 
 html {
     font-size: 14px;
-    font-family: 'IRANYekanXFaNum-Regular' !important;
+    font-family: 'IRANYekanXFaNum-Regular', 'SFProAuto';
 }
 
 @media (min-width: 768px) {
     html {
         font-size: 14px;
-        font-family: 'IRANYekanXFaNum-Regular' !important;
+        font-family: 'IRANYekanXFaNum-Regular', 'SFProAuto', sans-serif;
     }
 }
 
@@ -244,7 +251,7 @@ body {
 
 /* اعمال فونت سفارشی به ورودی تقویم */
 #selectedDate {
-    font-family: 'IRANYekanXFaNum-Regular' !important;
+    font-family: 'IRANYekanXFaNum-Regular', 'SFProAuto', sans-serif;
     font-size: 14px !important;
     direction: rtl;
     text-align: right;
@@ -262,7 +269,7 @@ body {
 .pwt-time-picker,
 .pwt-selected-date,
 .pwt-cal-footer {
-    font-family: 'IRANYekanXFaNum-Regular' !important;
+    font-family: 'IRANYekanXFaNum-Regular', 'SFProAuto', sans-serif;
     font-size: 14px !important;
     text-align: center !important;
 }
@@ -321,7 +328,7 @@ body {
 }
 
 .dataTables_wrapper {
-    font-family: 'IRANYekanXFaNum-Regular' !important;
+    font-family: 'IRANYekanXFaNum-Regular', 'SFProAuto', sans-serif;
     font-size: 14px;
 }
 
@@ -388,7 +395,7 @@ div.dataTables_wrapper select,
 div.dataTables_wrapper input[type="search"] {
     margin-right: 8px;
     margin-left: 8px;
-    font-family: 'IRANYekanXFaNum-Regular' !important;
+    font-family: 'IRANYekanXFaNum-Regular', 'SFProAuto', sans-serif;
     font-size: 14px;
 }
 
@@ -414,7 +421,7 @@ div.dataTables_wrapper div.dataTables_filter input {
     padding: 4px 8px;
     border-radius: 6px;
     border: 1px solid #ccc;
-    font-family: 'IRANYekanXFaNum-Regular' !important;
+    font-family: 'IRANYekanXFaNum-Regular', 'SFProAuto', sans-serif;
     font-size: 14px;
 }
 
@@ -605,8 +612,25 @@ select:focus {
 
 .env-banner {
     font-weight: bold;
+    font-family: 'IRANYekanXFaNum-Regular';
     font-size: 0.9rem;
     border-bottom: 2px solid #ddd;
     z-index: 9999;
     position: relative;
 }
+/* فونت و استایل RTL برای منو */
+.offcanvas {
+    font-family: 'IRANYekanXFaNum-Regular';
+    background-color: #00398d; /* پس‌زمینه تیره */
+    color: #fff;
+    width: 255px;
+    transition: transform 0.5s ease-in-out, visibility 0.5s ease-in-out;
+}
+    .offcanvas .nav-link:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+    }
+    /* حذف پرش‌های سریع هنگام مخفی‌سازی */
+    .offcanvas.showing, .offcanvas.hiding {
+        transition: transform 0.5s ease-in-out, visibility 0.5s ease-in-out;
+    }

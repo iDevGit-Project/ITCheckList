@@ -1,6 +1,14 @@
-﻿@font-face {
+﻿/* فونت فارسی */
+@font-face {
     font-family: 'IRANYekanXFaNum-Regular';
     src: url('/fonts/IRANYekanXFaNum-Regular.woff2') format('woff2');
+    font-display: swap;
+}
+
+/* فونت انگلیسی */
+@font-face {
+    font-family: 'SFProAuto';
+    src: url('/fonts/en-ft/woff2/SFProDisplay-Regular.woff2') format('woff2');
     font-display: swap;
 }
 
@@ -8,7 +16,7 @@
 body {
     direction: rtl;
     text-align: right;
-    font-family: 'IRANYekanXFaNum-Regular';
+    font-family: 'IRANYekanXFaNum-Regular', 'SFProAuto', sans-serif;
     background-color: #f9f9f9;
     color: #333;
 }

@@ -6,7 +6,7 @@
 }
 <!--=================================================================-->
 
-<h2 class="text-center mt-3">گزارش بایگانی بر اساس تاریخ</h2>
+<h2 class="text-center fw-bold mt-4">گزارش بایگانی بر اساس تاریخ</h2>
 <h5 class="text-center mt-3">.جهت نمایش اطلاعات، تاریخ خورد را از ورودی زیر انتخاب نمایید</h5>
 <div class="d-flex justify-content-center mt-4">
     <form method="post" asp-action="ArchiveIndex" onsubmit="startLoader()" class="d-flex align-items-center gap-2 flex-wrap flex-sm-nowrap">
@@ -51,7 +51,11 @@
                     <td>@Model[i].Description</td>
                     <td>@Model[i].Note</td>
                     <td>@(Model[i].Status ? "انجام شد" : "انجام نشده")</td>
-                    <td>@Model[i].CreatedAt.ToString("yyyy/MM/dd - HH:mm")</td>
+                    <td>
+                        <span class="shamsi-datetime" data-date="@Model[i].CreatedAt.ToString("o")">
+                            @Model[i].CreatedAt.ToString("yyyy/MM/dd - HH:mm") <!-- fallback -->
+                        </span>
+                    </td>
                 </tr>
             }
         </tbody>
@@ -75,6 +79,7 @@
     <link rel="stylesheet" href="https://printjs-4de6.kxcdn.com/print.min.css">
     <script src="~/lib/printArchiveReport.js" asp-append-version="true"></script>
     <script src="~/lib/data-loading.js" asp-append-version="true"></script>
+<!--=================================================================-->
     <!-- تقویم شمسی و بارگذاری Overlay -->
     <script>
         $(document).ready(function () {
@@ -95,6 +100,47 @@
             });
         });
     </script>
+<!--=================================================================-->
+    <!--تابع سریع و خلاصه مخصوص جدول اطلاعات جهت  تبدیل تاریخ میلادی به شمسی-->
+    <script>
+        function toShamsi(gDate) {
+            const g_y = gDate.getFullYear(), g_m = gDate.getMonth() + 1, g_d = gDate.getDate();
+            const g_days_in_month = [31,28,31,30,31,30,31,31,30,31,30,31];
+            const j_days_in_month = [31,31,31,31,31,31,30,30,30,30,30,29];
+            const div = (a, b) => Math.floor(a / b);
+            let gy = g_y - 1600, gm = g_m - 1, gd = g_d - 1;
+            let g_day_no = 365 * gy + div((gy + 3), 4) - div((gy + 99), 100) + div((gy + 399), 400);
+            for (let i = 0; i < gm; ++i) g_day_no += g_days_in_month[i];
+            if (gm > 1 && ((gy % 4 == 0 && gy % 100 != 0) || (gy % 400 == 0))) ++g_day_no;
+            g_day_no += gd;
+            let j_day_no = g_day_no - 79;
+            let j_np = div(j_day_no, 12053); j_day_no %= 12053;
+            let jy = 979 + 33 * j_np + 4 * div(j_day_no, 1461); j_day_no %= 1461;
+            if (j_day_no >= 366) {
+                jy += div((j_day_no - 1), 365);
+                j_day_no = (j_day_no - 1) % 365;
+            }
+            let jm, jd;
+            for (var i = 0; i < 11 && j_day_no >= j_days_in_month[i]; ++i) j_day_no -= j_days_in_month[i];
+            jm = i + 1; jd = j_day_no + 1;
+            return { year: jy, month: jm.toString().padStart(2, '0'), day: jd.toString().padStart(2, '0') };
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll(".shamsi-datetime").forEach(el => {
+                const dateStr = el.dataset.date;
+                if (!dateStr) return;
+                const g = new Date(dateStr); // تبدیل ISO به Date
+                if (isNaN(g)) return;
+                const local = new Date(g.getTime() + g.getTimezoneOffset() * 60000); // UTC -> Local
+                const j = toShamsi(local);
+                const hour = local.getHours().toString().padStart(2, '0');
+                const minute = local.getMinutes().toString().padStart(2, '0');
+                el.textContent = `${hour}:${minute} - ${j.year}/${j.month}/${j.day}`;
+            });
+        });
+    </script>
+<!--=================================================================-->
     <script>
         function showOverlay(delay = 1250) {
             return new Promise(resolve => {

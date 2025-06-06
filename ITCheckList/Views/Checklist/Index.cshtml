@@ -38,10 +38,10 @@
     </script>
 }
 <!--=================================================================-->
-<div class="mt-5" id="reportSection" dir="rtl">
+<div class="mt-5" id="reportSection">
     <h4 class="text-center fw-bold">مدیریت چک لیست روزانه</h4>
     <!-- نوار ابزار بالا -->
-    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 my-3">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 my-3" dir="rtl">
         <button id="btnAdd" type="button" class="btn custom-btn btn-outline-primary">
             افزودن موضوع جدید
         </button>
@@ -49,7 +49,7 @@
     </div>
 
     <!-- جدول اطلاعات -->
-    <table class="table table-bordered text-center align-middle responsive-table" id="reportTable">
+    <table class="table table-bordered text-center align-middle responsive-table" id="reportTable" dir="rtl">
         <thead class="table-light">
             <tr>
                 <th class="text-center">ردیف</th>
@@ -76,7 +76,7 @@
                         rowClass = "table-warning";
                         if (!item.Status)
                         {
-                            rowClass += " pending-row-highlight"; // فقط وقتی Status=false
+                            rowClass += " pending-row-highlight";
                         }
                     }
                     else
@@ -88,17 +88,29 @@
                         <td>@(i++)</td>
                         <td class="text-end">@item.Section</td>
                         <td class="text-end">@item.Description</td>
-                        <td>@item.CreatedAt.ToString("yyyy/MM/dd")</td>
+
+                        <!-- تبدیل به شمسی در کلاینت -->
+                        <td>
+                            <span class="shamsi-date" data-date="@item.CreatedAt.ToString("o")">
+                                @item.CreatedAt.ToString("yyyy/MM/dd") <!-- fallback -->
+                            </span>
+                        </td>
+
                         <td class="text-end">@item.Note</td>
+
                         <td class="text-center">
                             <span class="d-block rounded-2 px-2 py-1 status-badge @(item.Status ? "status-done" : "status-pending blinking-badge")">
                                 @(item.Status ? "انجام شد." : "در دست اقدام.")
                                 @if (!item.Status)
                                 {
-                                    <span id="timer-@item.Id" data-start="@item.CreatedAt.ToString("o")" class="fw-bold text-dark"></span>
+                                    <span id="timer-@item.Id"
+                                          data-start="@item.CreatedAt.ToString("o")"
+                                          class="fw-bold text-dark">
+                                    </span>
                                 }
                             </span>
                         </td>
+
                         <td class="text-center">
                             @if (item.Status)
                             {
@@ -126,7 +138,6 @@
                     </tr>
                 }
             }
-        
         </tbody>
     </table>
 
@@ -573,7 +584,7 @@
         });
     </script>
     <!--=================================================================-->
-    <!--تبدیل تاریخ میلادی به شمسی-->
+    <!--تابع کامل تبدیل تاریخ میلادی به شمسی-->
     <script>
         function toShamsi(gDate) {
             const g_y = gDate.getFullYear(), g_m = gDate.getMonth() + 1, g_d = gDate.getDate();
@@ -606,6 +617,20 @@
             const today = new Date(), shamsi = toShamsi(today);
             const formattedDate = `${weekDays[today.getDay()]} ${shamsi.year}/${shamsi.month}/${shamsi.day}`;
             document.getElementById("shamsiDate").innerText = formattedDate;
+        });
+    </script>
+    <!--=================================================================-->
+    <!--تابع سریع و خلاصه مخصوص جدول اطلاعات جهت  تبدیل تاریخ میلادی به شمسی-->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll(".shamsi-date").forEach(el => {
+                const dateStr = el.dataset.date;
+                if (!dateStr) return;
+                const g = new Date(dateStr);
+                if (isNaN(g)) return;
+                const j = toShamsi(g);
+                el.textContent = `${j.year}/${j.month}/${j.day}`;
+            });
         });
     </script>
     <!--=================================================================-->

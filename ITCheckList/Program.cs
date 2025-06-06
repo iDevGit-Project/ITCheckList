@@ -29,6 +29,10 @@ builder.Services.AddScoped<TBL_LogEntry>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ILogService, LogService>();
 
+// Mapping متدهای
+builder.Services.AddAutoMapper(typeof(MappingProfile));
+
+
 // 📡 پشتیبانی از Reverse Proxy یا Nginx یا IIS
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
