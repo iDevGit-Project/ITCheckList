@@ -1,0 +1,27 @@
+﻿@model List<TableOptimizationReport>
+
+<table class="table table-bordered text-center align-middle responsive-table" dir="rtl">
+    <thead class="table-light">
+        <tr>
+            <th>نام جدول</th>
+            <th>تعداد ردیف (قبل)</th>
+            <th>حجم (KB) قبل</th>
+            <th>تعداد ردیف (بعد)</th>
+            <th>حجم (KB) بعد</th>
+            <th>وضعیت</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.TableName</td>
+                <td>@item.RowCountBefore</td>
+                <td>@item.SizeBeforeKB</td>
+                <td>@item.RowCountAfter</td>
+                <td>@item.SizeAfterKB</td>
+                <td>@(item.WasOptimized ? "✔️" : "❌")</td>
+            </tr>
+        }
+    </tbody>
+</table>

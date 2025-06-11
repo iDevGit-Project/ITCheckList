@@ -1,0 +1,103 @@
+﻿@{
+    ViewData["Title"] = "تنظیمات سیستم";
+}
+
+<h3 class="text-center fw-bold">تنظیمات سیستم</h3>
+<div class="text-center">
+    <button id="btnClearCache" class="btn btn-danger m-2">پاک‌سازی کش</button>
+    <button id="btnOptimizeDb" class="btn btn-dark m-2">بهینه‌سازی پایگاه داده</button>
+</div>
+
+<div id="resultMessage" class="text-center mt-3 fw-bold"></div>
+
+@section ITCheckListSettingsScripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        // دکمه پاک‌سازی کش
+        document.getElementById("btnClearCache").addEventListener("click", function () {
+            Swal.fire({
+                title: 'آیا مطمئن هستید؟',
+                text: "تمام کش برنامه پاک می‌شود!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'بله، پاک کن!',
+                cancelButtonText: 'لغو',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch('/SystemSettings/ClearCache', {
+                        method: 'POST'
+                    }).then(res => res.text())
+                      .then(data => {
+                          Swal.fire('انجام شد!', data, 'success');
+                      }).catch(() => {
+                          Swal.fire('خطا!', 'عملیات با خطا مواجه شد.', 'error');
+                      });
+                }
+            });
+        });
+
+        // دکمه بهینه‌سازی پایگاه داده
+        document.getElementById("btnOptimizeDb").addEventListener("click", function () {
+            Swal.fire({
+                title: 'بهینه‌سازی پایگاه داده',
+                text: "آیا می‌خواهید عملیات بهینه‌سازی انجام شود؟",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'بله، اجرا کن',
+                cancelButtonText: 'لغو',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch('/SystemSettings/OptimizeDatabase', { method: 'POST' })
+                        .then(res => res.ok ? res.json() : Promise.reject())
+                        .then(data => {
+                            // ساخت HTML جدول گزارش
+                            let html = `
+                            <div style="max-height: 400px; overflow-y: auto; direction: rtl;">
+                                <table border="1" style="width:100%; border-collapse: collapse; text-align:center; font-size: 13px;">
+                                    <thead>
+                                        <tr style="background:#eee;">
+                                            <th>جدول</th>
+                                            <th>ردیف قبل</th>
+                                            <th>KB قبل</th>
+                                            <th>ردیف بعد</th>
+                                            <th>KB بعد</th>
+                                            <th>وضعیت</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>`;
+
+                            data.forEach(item => {
+                                html += `
+                                    <tr>
+                                        <td>${item.tableName}</td>
+                                        <td>${item.rowCountBefore}</td>
+                                        <td>${item.sizeBeforeKB}</td>
+                                        <td>${item.rowCountAfter}</td>
+                                        <td>${item.sizeAfterKB}</td>
+                                        <td>${item.wasOptimized ? '✔️' : '❌'}</td>
+                                    </tr>`;
+                            });
+
+                            html += "</tbody></table></div>";
+
+                            Swal.fire({
+                                title: 'گزارش بهینه‌سازی',
+                                html: html,
+                                width: '80%',
+                                confirmButtonText: 'بستن',
+                                customClass: {
+                                    popup: 'swal-wide'
+                                }
+                            });
+
+                        }).catch(() => {
+                            Swal.fire('خطا!', 'عملیات با خطا مواجه شد.', 'error');
+                        });
+                }
+            });
+        });
+    </script>
+}
+

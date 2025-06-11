@@ -1,0 +1,15 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+<div class="mt-5 d-flex justify-content-center align-items-center" dir="rtl">
+    <div class="text-center">
+        <h4 class="fw-bold">مدیریت چک لیست روزانه</h4>
+        <!-- نوار ابزار بالا -->
+        <div class="d-flex flex-wrap align-items-center gap-3 my-3 justify-content-center">
+            <a class="btn btn-primary" type="button" asp-area="" asp-controller="Checklist" asp-action="Index" onclick="startLoader()">مدیریت اطلاعات</a>
+            <a class="btn btn-primary" type="button" asp-area="" asp-controller="Checklist" asp-action="ArchiveIndex" onclick="startLoader()">آرشو اطلاعات</a>
+            <a class="btn btn-dark" type="button" asp-area="" asp-controller="Log" asp-action="Index" onclick="startLoader()">لاگ های سیستم</a>
+            <a class="btn btn-dark" type="button" asp-area="" asp-controller="SystemSettings" asp-action="Index" onclick="startLoader()">تنظیمات سیستم</a>
+        </div>
+    </div>
+</div>

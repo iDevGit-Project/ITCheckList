@@ -1,0 +1,178 @@
+﻿@model List<TBL_CheckItemArchive>
+@{
+    ViewData["Title"] = "گزارش بایگانی بر اساس تاریخ";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    <link href="~/css/site.css" rel="stylesheet" />
+}
+<!--=================================================================-->
+
+<h2 class="text-center fw-bold mt-4">گزارش بایگانی بر اساس تاریخ</h2>
+<h5 class="text-center mt-3">.جهت نمایش اطلاعات، تاریخ خورد را از ورودی زیر انتخاب نمایید</h5>
+<div class="d-flex justify-content-center mt-4">
+    <form method="post" asp-action="ArchiveIndex" onsubmit="startLoader()" class="d-flex align-items-center gap-2 flex-wrap flex-sm-nowrap">
+        <input type="text" id="selectedDate" name="selectedDate"
+               placeholder="تاریخ را انتخاب کنید"
+               class="form-control w-auto text-center"
+               autocomplete="off" />
+        <button type="submit" class="btn btn-outline-primary custom-btn">نمایش گزارش</button>
+    </form>
+</div>
+
+
+@if (ViewBag.ErrorMessage != null)
+{
+    <div class="alert alert-danger mt-3 text-center">@ViewBag.ErrorMessage</div>
+}
+
+@if (ViewBag.NoData != null)
+{
+    <div class="alert alert-warning mt-3 text-center">@ViewBag.NoData</div>
+}
+
+@if (Model != null && Model.Any())
+{
+    <table id="archiveTable" class="table table-bordered mt-4" dir="rtl">
+        <thead class="table-light text-center">
+            <tr>
+                <th>ردیف</th>
+                <th>بخش</th>
+                <th>توضیحات</th>
+                <th>یادداشت</th>
+                <th>وضعیت</th>
+                <th>ساعت و تاریخ ثبت</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < Model.Count; i++)
+            {
+                <tr class="text-center @(Model[i].Status == true ? "table-success" : "")">
+                    <td>@(i + 1)</td>
+                    <td>@Model[i].Section</td>
+                    <td>@Model[i].Description</td>
+                    <td>@Model[i].Note</td>
+                    <td>@(Model[i].Status ? "انجام شد" : "انجام نشده")</td>
+                    <td>
+                        <span class="shamsi-datetime" data-date="@Model[i].CreatedAt.ToString("o")">
+                            @Model[i].CreatedAt.ToString("yyyy/MM/dd - HH:mm") <!-- fallback -->
+                        </span>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<!-- دکمه دریافت خروجی -->
+<div class="text-center mt-3">
+    <button class="btn custom-btn btn-outline-primary" onclick="printArchiveReport()">دریافت خروجی از اطلاعات</button>
+</div>
+
+<!--=================================================================-->
+@section ITCheckListArciveView {
+    <!-- کتابخانه‌ها -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" asp-append-version="true"></script>
+    <script src="https://cdn.jsdelivr.net/npm/persian-date/dist/persian-date.min.js" asp-append-version="true"></script>
+    <script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js" asp-append-version="true"></script>
+    <link href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" asp-append-version="true"></script>
+    <script src="https://printjs-4de6.kxcdn.com/print.min.js" asp-append-version="true"></script>
+    <link rel="stylesheet" href="https://printjs-4de6.kxcdn.com/print.min.css">
+    <script src="~/lib/printArchiveReport.js" asp-append-version="true"></script>
+    <script src="~/lib/data-loading.js" asp-append-version="true"></script>
+<!--=================================================================-->
+    <!-- تقویم شمسی و بارگذاری Overlay -->
+    <script>
+        $(document).ready(function () {
+            $("#selectedDate").persianDatepicker({
+                format: "YYYY/MM/DD",
+                autoClose: true,
+                initialValue: false
+            });
+
+            var selectedDate = '@ViewBag.SelectedDate';
+            if (selectedDate) {
+                $('#selectedDate').val(selectedDate);
+            }
+
+            // نمایش Overlay هنگام ارسال فرم
+            $("form").on("submit", function () {
+                $("#loadingOverlay").fadeIn();
+            });
+        });
+    </script>
+<!--=================================================================-->
+    <!--تابع سریع و خلاصه مخصوص جدول اطلاعات جهت  تبدیل تاریخ میلادی به شمسی-->
+    <script>
+        function toShamsi(gDate) {
+            const g_y = gDate.getFullYear(), g_m = gDate.getMonth() + 1, g_d = gDate.getDate();
+            const g_days_in_month = [31,28,31,30,31,30,31,31,30,31,30,31];
+            const j_days_in_month = [31,31,31,31,31,31,30,30,30,30,30,29];
+            const div = (a, b) => Math.floor(a / b);
+            let gy = g_y - 1600, gm = g_m - 1, gd = g_d - 1;
+            let g_day_no = 365 * gy + div((gy + 3), 4) - div((gy + 99), 100) + div((gy + 399), 400);
+            for (let i = 0; i < gm; ++i) g_day_no += g_days_in_month[i];
+            if (gm > 1 && ((gy % 4 == 0 && gy % 100 != 0) || (gy % 400 == 0))) ++g_day_no;
+            g_day_no += gd;
+            let j_day_no = g_day_no - 79;
+            let j_np = div(j_day_no, 12053); j_day_no %= 12053;
+            let jy = 979 + 33 * j_np + 4 * div(j_day_no, 1461); j_day_no %= 1461;
+            if (j_day_no >= 366) {
+                jy += div((j_day_no - 1), 365);
+                j_day_no = (j_day_no - 1) % 365;
+            }
+            let jm, jd;
+            for (var i = 0; i < 11 && j_day_no >= j_days_in_month[i]; ++i) j_day_no -= j_days_in_month[i];
+            jm = i + 1; jd = j_day_no + 1;
+            return { year: jy, month: jm.toString().padStart(2, '0'), day: jd.toString().padStart(2, '0') };
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll(".shamsi-datetime").forEach(el => {
+                const dateStr = el.dataset.date;
+                if (!dateStr) return;
+                const g = new Date(dateStr); // تبدیل ISO به Date
+                if (isNaN(g)) return;
+                const local = new Date(g.getTime() + g.getTimezoneOffset() * 60000); // UTC -> Local
+                const j = toShamsi(local);
+                const hour = local.getHours().toString().padStart(2, '0');
+                const minute = local.getMinutes().toString().padStart(2, '0');
+                el.textContent = `${hour}:${minute} - ${j.year}/${j.month}/${j.day}`;
+            });
+        });
+    </script>
+<!--=================================================================-->
+    <script>
+        function showOverlay(delay = 1250) {
+            return new Promise(resolve => {
+                const overlay = document.getElementById('globalOverlay');
+                overlay.style.display = 'flex';
+                setTimeout(() => resolve(), delay); // صبر کن بعد عملیات اصلی اجرا بشه
+            });
+        }
+        function hideOverlay() {
+            const overlay = document.getElementById('globalOverlay');
+            overlay.style.display = 'none';
+        }
+        // اجرا برای همه فرم‌ها
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('[data-loading="true"]').forEach(el => {
+                if (el.tagName === 'FORM') {
+                    el.addEventListener('submit', async function (e) {
+                        await showOverlay();
+                    });
+                } else {
+                    el.addEventListener('click', async function (e) {
+                        if (!el.hasAttribute('data-manual')) {
+                            e.preventDefault(); // جلوی اجرا رو بگیر
+                            await showOverlay();
+                            const href = el.getAttribute('href');
+                            const formAction = el.getAttribute('formaction');
+                            if (href) window.location.href = href;
+                            else if (formAction) el.closest('form').submit();
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+}

@@ -1,0 +1,156 @@
+﻿@model ITCheckList.Models.TBL_CheckItem
+
+@{
+    ViewData["Title"] = "ویرایش بررسی";
+}
+
+<h4 class="text-center my-4">ویرایش اطلاعات بررسی</h4>
+
+<form asp-action="Edit" method="post" class="container" dir="rtl">
+    @* فیلد مخفی شناسه آیتم *@
+    <input type="hidden" asp-for="Id" />
+
+    <div class="mb-3">
+        <label asp-for="Section" class="form-label fw-bold">بخش</label>
+        <input asp-for="Section" class="form-control" required />
+        <span asp-validation-for="Section" class="text-danger small fw-bold"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Description" class="form-label fw-bold">موضوع</label>
+        <input asp-for="Description" class="form-control" required />
+        <span asp-validation-for="Description" class="text-danger small fw-bold"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Note" class="form-label fw-bold">توضیحات</label>
+        <textarea asp-for="Note" class="form-control" rows="3"></textarea>
+        <span asp-validation-for="Note" class="text-danger small fw-bold"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Status" class="form-label fw-bold">وضعیت</label>
+        <select asp-for="Status" class="form-select" required>
+            <option value="">-- انتخاب وضعیت --</option>
+            <option value="false" selected="@(!Model.Status)">در حال بررسی</option>
+            <option value="true" selected="@(Model.Status)">انجام شد</option>
+        </select>
+        <span asp-validation-for="Status" class="text-danger small fw-bold"></span>
+    </div>
+
+    @* فقط نمایش زمان ایجاد - بدون ارسال مجدد به سرور *@
+    <div class="mb-3">
+        <label class="form-label fw-bold">زمان ثبت اولیه</label>
+        <input class="form-control bg-light" value="@Model.CreatedAt.ToString("yyyy/MM/dd HH:mm")" readonly disabled />
+    </div>
+
+    @* فقط نمایش زمان سپری‌شده در صورت موجود بودن *@
+@*     @if (Model.DurationInSeconds.HasValue)
+    {
+        <div class="mb-3">
+            <label class="form-label fw-bold">مدت زمان سپری‌شده</label>
+            <input class="form-control bg-light" value="@TimeSpan.FromSeconds(Model.DurationInSeconds.Value).ToString(@"mm\:ss")" readonly disabled />
+        </div>
+    } *@
+
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-success px-4">ثبت تغییرات</button>
+        <a asp-action="Index" class="btn btn-secondary px-4">بازگشت</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+
+@* @model ITCheckList.Models.TBL_CheckItem
+
+@{
+    ViewData["Title"] = "ویرایش بررسی";
+}
+
+<h4 class="text-center my-4">ویرایش اطلاعات بررسی</h4>
+
+<form asp-action="Edit" method="post" class="container" dir="rtl">
+    <input type="hidden" asp-for="Id" />
+
+    <div class="mb-3">
+        <label asp-for="Section" class="form-label fw-bold">بخش</label>
+        <input asp-for="Section" class="form-control" required />
+        <span asp-validation-for="Section" class="text-danger small fw-bold"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Description" class="form-label fw-bold">موضوع</label>
+        <input asp-for="Description" class="form-control" required />
+        <span asp-validation-for="Description" class="text-danger small fw-bold"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Note" class="form-label fw-bold">توضیحات</label>
+        <textarea asp-for="Note" class="form-control" rows="3"></textarea>
+        <span asp-validation-for="Note" class="text-danger small fw-bold"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Status" class="form-label fw-bold">وضعیت</label>
+        <select asp-for="Status" class="form-select" required>
+            <option value="">-- انتخاب وضعیت --</option>
+            <option value="false" selected="@(!Model.Status)">در حال بررسی</option>
+            <option value="true" selected="@(Model.Status)">انجام شد</option>
+        </select>
+        <span asp-validation-for="Status" class="text-danger small fw-bold"></span>
+    </div>
+
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-success px-4">ثبت تغییرات</button>
+        <a asp-action="Index" class="btn btn-secondary px-4">بازگشت</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+} *@
+
+@* @model ITCheckList.Models.TBL_CheckItem
+
+@{
+    ViewData["Title"] = "ویرایش بررسی";
+}
+
+<h4 class="text-center my-4">ویرایش اطلاعات بررسی</h4>
+
+<form asp-action="Edit" method="post" class="container" dir="rtl">
+    <input type="hidden" asp-for="Id" />
+
+    <div class="mb-3">
+        <label asp-for="Section" class="form-label">بخش</label>
+        <input asp-for="Section" class="form-control" />
+        <span asp-validation-for="Section" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Description" class="form-label">موضوع</label>
+        <input asp-for="Description" class="form-control" />
+        <span asp-validation-for="Description" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Note" class="form-label">توضیحات</label>
+        <textarea asp-for="Note" class="form-control"></textarea>
+        <span asp-validation-for="Note" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Status" class="form-label">وضعیت</label>
+        <select asp-for="Status" class="form-select">
+            <option value="true">انجام شد</option>
+            <option value="false">در حال بررسی</option>
+        </select>
+        <span asp-validation-for="Status" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-success">ثبت تغییرات</button>
+    <a asp-action="Index" class="btn btn-secondary">بازگشت</a>
+</form>
+ *@

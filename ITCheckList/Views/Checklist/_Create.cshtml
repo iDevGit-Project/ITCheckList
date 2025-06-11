@@ -1,0 +1,41 @@
+﻿@model ITCheckList.Models.TBL_CheckItem
+
+<!-- فرم افزودن موضوع جدید -->
+<form id="addChecklistForm" dir="rtl" autocomplete="off">
+    <div class="mb-3">
+        <label for="section" class="form-label fw-bold">نام بخش</label>
+        <input asp-for="Section" class="form-control" id="section" required />
+        <span asp-validation-for="Section" class="text-danger small fw-bold"></span>
+    </div>
+
+    <div class="mb-3">
+        <label for="description" class="form-label fw-bold">توضیحات</label>
+        <input asp-for="Description" class="form-control" id="description" required />
+        <span asp-validation-for="Description" class="text-danger small fw-bold"></span>
+    </div>
+
+    <div class="mb-3">
+        <label for="status" class="form-label fw-bold">وضعیت</label>
+        <select asp-for="Status" class="form-select" id="status" required>
+            <option value="">-- انتخاب وضعیت --</option>
+            <option value="false">در دست بررسی</option>
+            <option value="true">انجام شد</option>
+        </select>
+        <span asp-validation-for="Status" class="text-danger small fw-bold"></span>
+    </div>
+
+    <div class="mb-3">
+        <label for="note" class="form-label fw-bold">ثبت یادداشت</label>
+        <input asp-for="Note" class="form-control" id="note" />
+        <span asp-validation-for="Note" class="text-danger small fw-bold"></span>
+    </div>
+
+    <div class="d-inline-flex gap-2">
+        <button type="submit" class="btn btn-success">ثبت اطلاعات</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+    </div>
+</form>
+
+@section ValidationAddCheckListForm {
+    <partial name="_ValidationScriptsPartial" />
+}

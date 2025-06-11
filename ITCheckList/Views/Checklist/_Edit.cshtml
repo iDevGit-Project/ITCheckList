@@ -1,0 +1,22 @@
+﻿@model ITCheckList.Models.TBL_CheckItem
+
+<form id="editChecklistForm">
+    <input type="hidden" name="Id" value="@Model.Id" />
+    <div class="mb-3">
+        <label class="form-label">بخش</label>
+        <input name="Section" class="form-control" value="@Model.Section" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">مورد بررسی</label>
+        <input name="Description" class="form-control" value="@Model.Description" />
+    </div>
+    <div class="form-check mb-3">
+        <input type="checkbox" name="Status" class="form-check-input" @(Model.Status ? "checked" : "") />
+        <label class="form-check-label">تأیید شده</label>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">توضیحات</label>
+        <textarea name="Note" class="form-control">@Model.Note</textarea>
+    </div>
+    <button type="submit" class="btn btn-warning">ثبت و ویرایش تغییرات</button>
+</form>

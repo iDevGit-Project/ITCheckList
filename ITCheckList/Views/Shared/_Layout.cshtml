@@ -1,0 +1,287 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - ITCheckList</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/ITCheckList.styles.css" asp-append-version="true" />
+    <!-- اضافه کردن استایل Toastr -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link rel="preload" href="~/fonts/IRANYekanXFaNum-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+</head>
+<!--=================================================================-->
+<!-- متد اطلاع رسانی در خصوص اجرای پروژه در هاست واقعی یا لوکال -->
+@using ITCheckList.Helpers
+@{
+    var now = DateTime.Now;
+
+    var lastEnvShown = Context.Request.Cookies["EnvMsgLastShown"];
+    if (string.IsNullOrEmpty(lastEnvShown) ||
+        !DateTime.TryParse(lastEnvShown, out var lastTime) ||
+        (now - lastTime).TotalMinutes > 1)
+    {
+        Context.Response.Cookies.Append("EnvMsgLastShown", now.ToString(), new CookieOptions
+                {
+                    Expires = now.AddMinutes(15),
+                    IsEssential = true
+                });
+    }
+
+    var isLocal = EnvironmentHelper.IsLocal(Context);
+    var envMessage = EnvironmentHelper.GetEnvironmentMessage(Context);
+    var envClass = EnvironmentHelper.GetEnvironmentBadgeClass(Context);
+}
+<!--=================================================================-->
+<body>
+<!--=================================================================-->
+    <!-- متد اطلاع رسانی در خصوص بررسی محیط پروژه نرم افزار-->
+@*     @inject IWebHostEnvironment Env
+
+    @{
+        var showBanner = !Env.IsDevelopment();
+        var bannerClass = "";
+        var bannerText = "";
+
+        if (Env.IsStaging())
+        {
+            bannerClass = "bg-warning text-dark";
+            bannerText = "⚠️ شما در حال مشاهده محیط Staging هستید. تغییرات نهایی ممکن است پایدار نباشند.";
+        }
+        else if (Env.IsProduction())
+        {
+            bannerClass = "bg-danger text-white";
+            bannerText = "🛑 شما در حال مشاهده محیط Production هستید. هر تغییری باید با احتیاط انجام شود.";
+        }
+    }
+
+    @if (showBanner)
+    {
+        <div class="env-banner alert @bannerClass text-center m-0 p-2" dir="rtl">
+            @bannerText
+        </div>
+    } *@
+<!--=================================================================-->
+    <div class="daily-reminder-container" id="notification-container"></div>
+    <header dir="rtl">
+        <nav class="navbar navbar-expand-sm navbar-light bg-light text-dark border-bottom box-shadow mb-3" dir="rtl">
+            <div class="container d-flex flex-wrap justify-content-between align-items-center">
+                <!-- دکمه منوی سه‌خطی -->
+                <button class="btn btn-primary me-2 order-1 order-sm-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasMenu" aria-label="باز کردن منو">
+                    <i class="bi bi-list" style="font-size: 1.2rem;"></i>
+                </button>
+
+                <!-- برند و منوها -->
+                <div class="d-flex align-items-center flex-grow-1 nav-animated-container order-2 order-sm-1 mt-2 mt-sm-0">
+                    <!-- برند -->
+                    <a class="navbar-brand fw-bold ms-3 nav-animated mb-0" asp-area="" asp-controller="Home" asp-action="Index" style="font-size: 1rem;">
+                        مدیریت چک لیست روزانه
+                    </a>
+
+                    <!-- منوی افقی فقط برای دسکتاپ -->
+                    <ul class="navbar-nav flex-row d-none d-sm-flex ms-4">
+                        <li class="nav-item me-3">
+                            <a class="nav-link text-dark fw-bold nav-animated" asp-controller="Checklist" asp-action="Index">
+                                مدیریت اطلاعات
+                            </a>
+                        </li>
+                        <li class="nav-item me-3">
+                            <a class="nav-link text-dark fw-bold nav-animated" asp-controller="Checklist" asp-action="ArchiveIndex">
+                                آرشیو اطلاعات
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark fw-bold nav-animated" asp-controller="Log" asp-action="Index">
+                                لاگ‌ها
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark fw-bold nav-animated" asp-controller="SystemSettings" asp-action="Index">
+                                تنظیمات سیستم
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- تاریخ -->
+                <div class="text-start text-nowrap ms-auto order-3 mt-2 mt-sm-0" style="font-size: 13px;">
+                    <div id="dateText" class="fw-bold text-black"></div>
+                    @* <div id="timeText" class="text-black" style="font-size: 13px;"></div> *@
+                </div>
+            </div>
+        </nav>
+
+        <!-- نوار بارگذاری -->
+        <div id="global-loader" style="height: 3px; background: #3498db; width: 0%; position: fixed; top: 56px; right: 0; z-index: 9999; transition: width 0.3s ease;"></div>
+
+        <!-- لایه تارکننده و اسپینر -->
+        <div id="overlay-loader" style="display: none; position: fixed; top: 0; right: 0; width: 100%; height: 100vh; background-color: rgba(255, 255, 255, 0.6); backdrop-filter: blur(2px); z-index: 9998; justify-content: center; align-items: center;">
+            <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                <span class="visually-hidden">در حال بارگذاری...</span>
+            </div>
+            <div style="margin-top: 5px; font-weight: bold; color: #0b0b0b;">سیستم در حال بررسی اطلاعات...</div>
+        </div>
+    </header>
+
+    <!--=================================================================-->
+    <!-- Overlay و Spinner لودینگ مشترک -->
+    <div class="container">
+        <main role="main" class="pb-3">
+            <div id="globalOverlay" class="overlay-loading" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color: rgba(255,255,255,0.7); z-index:9999; text-align:center;">
+                <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%);">
+                    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                        <span class="visually-hidden">...در حال بارگذاری</span>
+                    </div>
+                    <div class="mt-3">.در حال بررسی اطلاعات، لطفاً منتظر بمانید</div>
+                </div>
+            </div>
+            @RenderBody()
+        </main>
+    </div>
+    <!--=================================================================-->
+    <!-- Offcanvas Menu -->
+    <div class="offcanvas offcanvas-end text-bg-dark" tabindex="-1" id="offcanvasMenu" aria-labelledby="offcanvasMenuLabel" dir="rtl">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="offcanvasMenuLabel">داشبرد کاربری</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="بستن"></button>
+        </div>
+        <div class="offcanvas-body">
+            <ul class="nav flex-column gap-3 text-end">
+                <li class="nav-item">
+                    <a class="nav-link text-white fw-bold" href="/Checklist/Index"><i class="bi bi-check2-square me-2"></i> مدیریت اطلاعات</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white fw-bold" href="/Checklist/ArchiveIndex"><i class="bi bi-archive me-2"></i> آرشیو اطلاعات</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white fw-bold" href="/Log/Index"><i class="bi bi-clipboard-data me-2"></i> لاگ‌ها</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <!--=================================================================-->
+    <footer class="border-top footer bg-light text-dark" dir="rtl">
+        <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+            <div class="text-center text-md-start">
+                کلیه حقوق برای <span class="fw-bold">حامد شریعتی مهر</span> محفوظ است.
+            </div>
+            <div class="d-flex gap-2 flex-wrap justify-content-center">
+                <span id="env-status" class="badge w-bold p-2 @envClass">بستر پروژه: <span class="text-dark">@envMessage</span></span>
+                <span id="internet-status" class="badge bg-secondary">بررسی اتصال...</span>
+            </div>
+        </div>
+    </footer>
+    <!--=================================================================-->
+    <script src="~/lib/jquery/dist/jquery.min.js" asp-append-version="true"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js" asp-append-version="true"></script>
+    <!--=================================================================-->
+    <script src="~/lib/showdatetimefa.js" asp-append-version="true"></script>
+    <!--=================================================================-->
+    <!-- متد بررسی رشته اتصال به پایگاه داده-->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="~/js/connection-check.js" asp-append-version="true"></script>
+    <!--=================================================================-->
+    <!-- پیام های سفارشی در برنامه -->
+    <script>
+        function showNotification(message, type = "info") {
+            const notif = document.createElement("div");
+            notif.className = `daily-reminder ${type}`;
+            notif.innerHTML = message;
+
+            document.body.appendChild(notif);
+
+            // فعال‌سازی حالت نمایان شدن
+            requestAnimationFrame(() => {
+                notif.classList.add("show");
+            });
+
+            // مدت زمان نمایش (4000ms = 4 ثانیه)
+            setTimeout(() => {
+                notif.classList.remove("show");
+
+                // مدت زمان محو شدن (500ms مطابق transition)
+                setTimeout(() => {
+                    notif.remove();
+                }, 500);
+            }, 4000);
+        }
+    </script>
+    <!--=================================================================-->
+    <script>
+        function startLoader() {
+            const loader = document.getElementById('global-loader');
+            const overlay = document.getElementById('overlay-loader');
+
+            loader.style.width = '0%';
+            loader.style.display = 'block';
+            overlay.style.display = 'flex';
+
+            setTimeout(() => {
+                loader.style.width = '80%';
+            }, 100);
+
+            // حداکثر تا 10 ثانیه بعد به‌صورت خودکار قطع میشه
+            setTimeout(() => {
+                stopLoader();
+            }, 10000);
+        }
+
+        function stopLoader() {
+            const loader = document.getElementById('global-loader');
+            const overlay = document.getElementById('overlay-loader');
+
+            loader.style.width = '100%';
+            setTimeout(() => {
+                loader.style.display = 'none';
+                loader.style.width = '0%';
+                overlay.style.display = 'none';
+            }, 500);
+        }
+    </script>
+    <!--=================================================================-->
+    <script>
+        setTimeout(function () {
+            const el = document.getElementById('envReminder');
+            if (el) {
+                el.style.transition = "opacity 0.5s ease-out";
+                el.style.opacity = "0";
+                setTimeout(() => el.remove(), 500);
+            }
+        }, 5000); // مخفی شدن بعد از 10 ثانیه
+    </script>
+    <!--=================================================================-->
+    <script>
+        function updateInternetStatus() {
+            const badge = document.getElementById('internet-status');
+            const isOnline = navigator.onLine;
+            if (navigator.onLine) {
+                badge.textContent = 'ارتباط: آنلاین';
+                badge.className = 'badge fw-normal p-2 bg-success';
+            } else {
+                badge.textContent = 'ارتباط: آفلاین';
+                badge.className = 'badge fw-normal p-2 bg-danger';
+            }
+        }
+
+        window.addEventListener('online', updateInternetStatus);
+        window.addEventListener('offline', updateInternetStatus);
+        document.addEventListener('DOMContentLoaded', updateInternetStatus);
+    </script>
+    <!--=================================================================-->
+    <!-- اضافه کردن جاوااسکریپت Toastr -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" asp-append-version="true"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js" asp-append-version="true"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/lib/data-loading.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+    @await RenderSectionAsync("ITCheckListIndex", false)
+    @await RenderSectionAsync("ITCheckListPrint", false)
+    @await RenderSectionAsync("ITCheckListArciveView", false)
+    @await RenderSectionAsync("ITCheckListLogsscripts", false)
+    @await RenderSectionAsync("ITCheckListSettingsScripts", false)
+    @await RenderSectionAsync("ValidationAddCheckListForm", false)
+</body>
+</html>

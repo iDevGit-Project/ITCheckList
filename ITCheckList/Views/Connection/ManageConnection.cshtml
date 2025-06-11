@@ -1,0 +1,79 @@
+﻿@model string
+@{
+    ViewData["Title"] = "مدیریت اتصال پایگاه داده";
+}
+
+<h2 class="text-2xl font-bold mb-4">مدیریت اتصال پایگاه داده</h2>
+
+<div class="grid gap-4">
+    <div>
+        <label class="font-semibold">رشته اتصال فعلی (رمزنگاری‌شده):</label>
+        <textarea readonly class="w-full p-2 rounded border bg-gray-100 text-xs">@Model</textarea>
+    </div>
+
+    <button id="btnShowForm" class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition">ویرایش اتصال</button>
+
+    <button id="btnReset" class="bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700 transition">ریست وضعیت تست اتصال</button>
+</div>
+
+<script>
+    document.getElementById("btnShowForm").addEventListener("click", () => {
+        Swal.fire({
+            title: "🔑 تنظیم رشته اتصال جدید",
+            html: `
+                <input id="server" class="swal2-input" placeholder="Server Name">
+                <input id="database" class="swal2-input" placeholder="Database Name">
+                <select id="authType" class="swal2-select">
+                    <option value="windows">Windows Authentication</option>
+                    <option value="sql">SQL Server Authentication</option>
+                </select>
+                <input id="username" class="swal2-input" placeholder="UserName (SQL)">
+                <input id="password" class="swal2-input" type="password" placeholder="Password (SQL)">
+            `,
+            confirmButtonText: "ذخیره",
+            showCancelButton: true,
+            preConfirm: () => ({
+                server: document.getElementById("server").value.trim(),
+                database: document.getElementById("database").value.trim(),
+                authenticationType: document.getElementById("authType").value,
+                username: document.getElementById("username").value.trim(),
+                password: document.getElementById("password").value
+            })
+        }).then(result => {
+            if (result.isConfirmed) saveEncryptedConnection(result.value);
+        });
+    });
+
+    function saveEncryptedConnection(data) {
+        Swal.fire({
+            title: "در حال ذخیره...",
+            didOpen: () => Swal.showLoading(),
+            allowOutsideClick: false
+        });
+
+        let connStr = `Server=${data.server};Database=${data.database};`;
+        if (data.authenticationType === "windows") {
+            connStr += "Trusted_Connection=True;";
+        } else {
+            connStr += `User ID=${data.username};Password=${data.password};Trusted_Connection=False;`;
+        }
+        connStr += "Trust Server Certificate=true;MultipleActiveResultSets=true;";
+
+        fetch("/Connection/SaveEncryptedConnection", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ connectionString: connStr })
+        })
+        .then(r => r.ok ? r.text() : r.text().then(msg => Promise.reject(msg)))
+        .then(msg => {
+            Swal.fire("✅ موفق", msg, "success").then(() => location.reload());
+        })
+        .catch(err => Swal.fire("❌ خطا", err, "error"));
+    }
+
+    document.getElementById("btnReset").addEventListener("click", () => {
+        fetch("/Connection/ResetConnectionTestFlag", { method: "POST" })
+            .then(() => Swal.fire("✅ موفق", "وضعیت تست اتصال ریست شد.", "success"))
+            .catch(() => Swal.fire("❌ خطا", "عملیات ناموفق بود.", "error"));
+    });
+</script>

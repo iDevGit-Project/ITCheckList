@@ -1,0 +1,56 @@
+﻿@model IEnumerable<TBL_CheckItemArchive>
+
+<h3 class="text-center fw-bold">گزارش کارهای بایگانی شده</h3>
+
+<table class="table table-bordered text-center mt-3">
+    <thead class="table-light">
+        <tr>
+            <th>ردیف</th>
+            <th>بخش</th>
+            <th>موضوع</th>
+            <th>تاریخ ثبت</th>
+            <th>توضیحات</th>
+            <th>وضعیت</th>
+            <th>تاریخ بایگانی</th>
+            <th>عملیات</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null)
+        {
+            int i = 1;
+            foreach (var item in Model)
+            {
+                var rowClass = item.Status ? "" : "table-warning blink-row"; // کلاس چشمک‌زن فقط برای در حال اقدام
+
+                <tr class="@rowClass">
+                    <td>@(i++)</td>
+                    <td>@item.Section</td>
+                    <td>@item.Description</td>
+                    <td>@item.CreatedAt.ToString("yyyy/MM/dd")</td>
+                    <td>@item.Note</td>
+                    <td>@(item.Status ? "انجام شد." : "در دست اقدام")</td>
+                    <td>@item.ArchivedAt.ToString("yyyy/MM/dd HH:mm")</td>
+                    <td>
+                        @(item.Status ? "اتمام کار" : "")
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+<script>
+    $(function () {
+        var message = '@TempData["Success"]';
+        if (message) {
+            toastr.success(message, 'عملیات موفقیت‌آمیز', {
+                timeOut: 3500,
+                rtl: true,
+                progressBar: true,
+                closeButton: true,
+                positionClass: "toast-top-left",
+                backgroundColor: "#0056B3"
+            });
+        }
+    });
+</script>

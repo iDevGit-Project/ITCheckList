@@ -1,0 +1,21 @@
+[
+  {
+    "outputFileName": "wwwroot/js/checklist-index.min.js",
+    "inputFiles": [
+      "wwwroot/js/checklist-index.js",
+      "wwwroot/js/"
+    ],
+    "minify": {
+      "enabled": true
+    }
+  },
+  {
+    "outputFileName": "wwwroot/css/checklist.min.css",
+    "inputFiles": [
+      "wwwroot/css/checklist.css"
+    ],
+    "minify": {
+      "enabled": true
+    }
+  }
+]

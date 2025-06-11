@@ -1,0 +1,636 @@
+﻿/* فونت فارسی */
+@font-face {
+    font-family: 'IRANYekanXFaNum-Regular';
+    src: url('/fonts/IRANYekanXFaNum-Regular.woff2') format('woff2');
+    font-display: swap;
+}
+/* فونت انگلیسی */
+@font-face {
+    font-family: 'SFProAuto';
+    src: url('/fonts/en-ft/woff2/SFProDisplay-Regular.woff2') format('woff2');
+    font-display: swap;
+}
+
+html {
+    font-size: 14px;
+    font-family: 'IRANYekanXFaNum-Regular', 'SFProAuto';
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 14px;
+        font-family: 'IRANYekanXFaNum-Regular', 'SFProAuto', sans-serif;
+    }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+    position: relative;
+    min-height: 100%;
+}
+
+body {
+    margin-bottom: 60px;
+    font-family: 'IRANYekanXFaNum-Regular';
+}
+
+@media (max-width: 768px) {
+    .responsive-table thead {
+        display: none;
+    }
+
+    .responsive-table tbody,
+    .responsive-table tr,
+    .responsive-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .responsive-table tr {
+        margin-bottom: 1rem;
+        border: 1px solid #ddd;
+        border-radius: 0.5rem;
+        padding: 0.5rem;
+        background-color: #f9f9f9;
+    }
+
+    .responsive-table td {
+        text-align: right !important;
+        padding-right: 1rem;
+        position: relative;
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+        border: none;
+        border-bottom: 1px solid #ddd;
+    }
+
+        .responsive-table td::before {
+            content: attr(data-label);
+            position: absolute;
+            right: 1rem;
+            font-weight: bold;
+            color: #666;
+        }
+
+        .responsive-table td:last-child {
+            border-bottom: none;
+        }
+}
+
+.btn {
+    border: none; /* حذف border */
+    border-radius: 5px; /* اضافه کردن گوشه‌های گرد به دکمه */
+    padding: 8px 10px; /* تنظیم padding برای ظاهر بهتر */
+}
+
+    .btn i {
+        margin-right: 0px; /* فاصله بین آیکن و متن */
+        font-size: 1.1rem; /* بزرگتر کردن اندازه آیکن */
+    }
+
+    /* افزودن افکت hover */
+    .btn:hover {
+        opacity: 0.8; /* کمی کاهش شفافیت برای افکت هاور */
+        cursor: pointer; /* تغییر cursor به pointer */
+        transform: translateY(-2px); /* بالا بردن دکمه در حالت hover */
+        transition: background-color 0.3s ease, transform 0.3s ease; /* اضافه کردن افکت‌های انتقال */
+    }
+
+.custom-btn {
+    border: none; /* حذف border */
+    border-radius: 8px; /* گوشه‌های گرد */
+    background-color: #0056B3; /* پس‌زمینه آبی */
+    color: white; /* رنگ متن سفید */
+    padding: 10px 18px; /* تنظیم padding برای دکمه */
+    font-size: 14px; /* اندازه فونت */
+    font-weight: bold; /* ضخیم کردن فونت */
+    box-shadow: 0 4px 6px rgba(0, 123, 255, 0.2); /* سایه کم برای دکمه */
+    transition: background-color 0.3s ease, transform 0.3s ease; /* اضافه کردن افکت‌های انتقال */
+}
+
+    .custom-btn:hover {
+        background-color: #0056B3; /* تغییر پس‌زمینه در حالت hover */
+        transform: translateY(-2px); /* بالا بردن دکمه در حالت hover */
+        box-shadow: 0 6px 10px rgba(0, 123, 255, 0.3); /* افزایش سایه در حالت hover */
+        cursor: pointer; /* تغییر موس به pointer */
+    }
+
+    .custom-btn:focus {
+        outline: none; /* حذف outline */
+    }
+
+.custom-btn-danger {
+    border: none; /* حذف border */
+    border-radius: 8px; /* گوشه‌های گرد */
+    background-color: #D7000E; /* پس‌زمینه قرمز */
+    color: white; /* رنگ متن سفید */
+    padding: 10px 18px; /* تنظیم padding برای دکمه */
+    font-size: 14px; /* اندازه فونت */
+    font-weight: bold; /* ضخیم کردن فونت */
+    box-shadow: 0 4px 6px rgba(0, 123, 255, 0.2); /* سایه کم برای دکمه */
+    transition: background-color 0.3s ease, transform 0.3s ease; /* اضافه کردن افکت‌های انتقال */
+}
+
+.custom-btn-danger:hover {
+    background-color: #A5000A; /* تغییر پس‌زمینه در حالت hover */
+    transform: translateY(-2px); /* بالا بردن دکمه در حالت hover */
+    box-shadow: 0 6px 10px rgba(0, 123, 255, 0.3); /* افزایش سایه در حالت hover */
+    cursor: pointer; /* تغییر موس به pointer */
+}
+
+    .custom-btn-danger:focus {
+        outline: none; /* حذف outline */
+    }
+
+.custom-btn-success {
+    border: none; /* حذف border */
+    border-radius: 8px; /* گوشه‌های گرد */
+    background-color: #0056B3; /* پس‌زمینه سبز */
+    color: white; /* رنگ متن سفید */
+    padding: 10px 18px; /* تنظیم padding برای دکمه */
+    font-size: 14px; /* اندازه فونت */
+    font-weight: bold; /* ضخیم کردن فونت */
+    box-shadow: 0 4px 6px rgba(0, 123, 255, 0.2); /* سایه کم برای دکمه */
+    transition: background-color 0.3s ease, transform 0.3s ease; /* اضافه کردن افکت‌های انتقال */
+}
+
+    .custom-btn-success:hover {
+        background-color: #0056B3; /* تغییر پس‌زمینه در حالت hover */
+        transform: translateY(-2px); /* بالا بردن دکمه در حالت hover */
+        box-shadow: 0 6px 10px rgba(0, 123, 255, 0.3); /* افزایش سایه در حالت hover */
+        cursor: pointer; /* تغییر موس به pointer */
+    }
+
+    .custom-btn-success:focus {
+        outline: none; /* حذف outline */
+    }
+
+.custom-toast-success {
+    background-color: #19B700 !important; /* رنگ پس‌زمینه */
+    color: white !important; /* رنگ متن */
+    direction: rtl; /* جهت متن راست به چپ */
+    text-align: right; /* چیدمان متن راست‌چین */
+    font-size: 14px;
+    font-family: 'IRANYekanXFaNum-Regular';
+}
+/* ظاهر زیباتر برای SweetAlert فارسی */
+.swal2-rtl {
+    direction: rtl !important;
+    font-family: 'IRANYekanXFaNum-Regular';
+    text-align: center;
+}
+
+.swal2-popup {
+    border-radius: 16px !important;
+    padding: 1.6rem 1.4rem !important;
+    text-align: center;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2) !important;
+}
+
+.swal2-title {
+    font-size: 1.4rem !important;
+    font-family: 'IRANYekanXFaNum-Regular';
+    color: #0056B3 !important;
+    text-align: center;
+    margin-bottom: 0.75rem !important;
+}
+
+.swal2-html-container {
+    font-size: 1rem !important;
+    font-family: 'IRANYekanXFaNum-Regular';
+    text-align: center;
+    color: #444;
+}
+
+.swal2-confirm.btn {
+    background-color: #0056B3;
+    color: #fff;
+    border-radius: 8px;
+    padding: 6px 20px;
+}
+
+.swal2-cancel.btn {
+    background-color: #e0e0e0;
+    color: #333;
+    border-radius: 8px;
+    padding: 6px 20px;
+}
+
+.swal2-styled.swal2-confirm:focus,
+.swal2-styled.swal2-cancel:focus {
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+.swal-wide {
+    width: 750px !important; /* عرض بیشتر برای جلوگیری از به‌هم‌ریختگی */
+}
+
+.done-row {
+    background-color: #F0F7F7 !important;
+}
+
+.status-done {
+    background-color: #d9efee; /* سبز ملایم */
+    color: #00796b; /* سبز تیره */
+    font-weight: bold;
+    text-align: center;
+    font-size: 14px;
+}
+
+.status-pending {
+    background-color: #fff3cd; /* زرد روشن */
+    color: #856404; /* زرد تیره */
+    font-weight: bold;
+    text-align: center;
+    font-size: 14px;
+}
+
+/* اعمال فونت سفارشی به ورودی تقویم */
+#selectedDate {
+    font-family: 'IRANYekanXFaNum-Regular', 'SFProAuto', sans-serif;
+    font-size: 14px !important;
+    direction: rtl;
+    text-align: right;
+}
+
+/* اعمال فونت سفارشی به popup و اجزای persian-datepicker */
+.pwt-datepicker-container,
+.pwt-date-container,
+.pwt-cal-header,
+.pwt-cal-year,
+.pwt-cal-month,
+.pwt-days,
+.pwt-btn,
+.pwt-nav-btn,
+.pwt-time-picker,
+.pwt-selected-date,
+.pwt-cal-footer {
+    font-family: 'IRANYekanXFaNum-Regular', 'SFProAuto', sans-serif;
+    font-size: 14px !important;
+    text-align: center !important;
+}
+
+/* در فایل site.css یا layout.css */
+.overlay-loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.4); /* شفاف */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    backdrop-filter: blur(4px);
+}
+
+.spinner {
+    border: 6px solid #f3f3f3;
+    border-top: 6px solid #007bff;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* متن متحرک */
+.loading-text {
+    margin-top: 15px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+    animation: blink 1.5s infinite;
+}
+
+@keyframes blink {
+    0%, 100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.4;
+    }
+}
+
+.dataTables_wrapper {
+    font-family: 'IRANYekanXFaNum-Regular', 'SFProAuto', sans-serif;
+    font-size: 14px;
+}
+
+table.dataTable {
+    border: 1px solid #dee2e6;
+    width: 100% !important;
+}
+
+    table.dataTable th,
+    table.dataTable td {
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    table.dataTable thead {
+        text-align: center;
+        vertical-align: middle;
+        background-color: #f1f5f9;
+        font-weight: bold;
+    }
+
+.dataTables_filter input {
+    border-radius: 5px;
+    padding: 5px 10px;
+    border: 1px solid #ced4da;
+}
+
+.dataTables_length select {
+    border-radius: 5px;
+    border: 1px solid #ced4da;
+}
+
+table.dataTable tbody tr {
+    opacity: 0;
+    transform: translateY(10px);
+    animation: fadeInUp 0.3s ease forwards;
+}
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+/* تنظیم کلی دکمه‌ها و ورودی‌های بالا به صورت Flex و راست‌چین */
+div.dataTables_wrapper div.dataTables_length,
+div.dataTables_wrapper div.dataTables_filter {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+/* چینش به سمت راست (در زبان فارسی) */
+div.dataTables_wrapper div.dataTables_length {
+    justify-content: flex-start;
+}
+
+div.dataTables_wrapper div.dataTables_filter {
+    justify-content: flex-end;
+}
+
+/* فاصله و فونت بهتر برای متن‌ها */
+div.dataTables_wrapper select,
+div.dataTables_wrapper input[type="search"] {
+    margin-right: 8px;
+    margin-left: 8px;
+    font-family: 'IRANYekanXFaNum-Regular', 'SFProAuto', sans-serif;
+    font-size: 14px;
+}
+
+/* نمایش افقی کامل */
+div.dataTables_wrapper .top-row {
+    margin-left: .0em;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    flex-direction: row-reverse; /* مناسب برای RTL */
+}
+
+/* حذف فاصله اضافی در فیلتر */
+div.dataTables_wrapper div.dataTables_filter label {
+    margin-left: .0em;
+    white-space: nowrap;
+    margin-bottom: 0;
+}
+
+div.dataTables_wrapper div.dataTables_filter input {
+    margin-left: 0 !important; /* حذف فاصله پیش‌فرض */
+    margin-right: 8px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-family: 'IRANYekanXFaNum-Regular', 'SFProAuto', sans-serif;
+    font-size: 14px;
+}
+
+/* اگر خواستی با لیبل هم تراز بشه */
+div.dataTables_wrapper div.dataTables_filter label {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* فاصله بین متن و ورودی */
+    margin-bottom: 0;
+}
+
+.bg-primary-custome {
+    background-color: #0056b3 !important;
+}
+
+.nav-animated {
+    position: relative;
+    transition: all 0.3s ease;
+    padding-bottom: 4px;
+}
+
+    .nav-animated::after {
+        content: '';
+        position: absolute;
+        width: 0;
+        height: 2px;
+        bottom: 0;
+        right: 0;
+        background-color: #0d6efd; /* رنگ آبی Bootstrap */
+        transition: width 0.3s ease;
+    }
+
+    .nav-animated:hover {
+        color: #0d6efd !important;
+        transform: translateY(-2px);
+    }
+
+        .nav-animated:hover::after {
+            width: 100%;
+        }
+/* حذف نوار آبی کلیک برای همه مرورگرها */
+button:focus,
+button:active,
+a:focus,
+a:active,
+input:focus,
+textarea:focus,
+select:focus {
+    outline: none !important;
+    box-shadow: none !important;
+}
+#overlay-loader div {
+    text-align: center;
+    font-size: 16px;
+}
+
+.spinner-border {
+    margin-bottom: 15px;
+}
+.bg-warning-subtle {
+    background-color: #fff8dc !important; /* زرد خیلی ملایم */
+}
+.custom-swal-width {
+    width: auto !important;
+    max-width: 90vw; /* برای اینکه خیلی بزرگ نشه در صفحه‌های کوچک */
+    padding: 20px;
+}
+
+.custom-alert-content {
+    direction: rtl;
+    text-align: right;
+    font-size: 15px;
+    white-space: nowrap;
+}
+.swal2-popup.custom-swal-rtl {
+    direction: rtl;
+    text-align: right;
+    font-family: 'IRANYekanXFaNum-Regular';
+}
+.status-badge {
+    transition: opacity 0.4s ease-in-out;
+}
+
+.blinking-badge {
+    opacity: 1;
+}
+
+    .blinking-badge.dimmed {
+        opacity: 0.2;
+    }
+
+@keyframes blink {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.3;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+.blink-row {
+    animation: blink 1s linear infinite;
+}
+
+@keyframes blink {
+    0% {
+        background-color: #fff3cd;
+    }
+
+    50% {
+        background-color: #ffeeba;
+    }
+
+    100% {
+        background-color: #fff3cd;
+    }
+}
+.pending-row-highlight .status-badge {
+    animation: blink 1s infinite;
+}
+
+/* افکت hover زیبا برای نمایش تعامل */
+.daily-reminder:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.daily-reminder {
+    position: fixed;
+    top: 1rem;
+    left: 50%;
+    z-index: 9999;
+    min-width: 300px;
+    max-width: 600px;
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: bold;
+    color: #fff;
+    background-color: #333;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+    text-align: center;
+    pointer-events: none;
+}
+.daily-reminder-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+    pointer-events: none;
+}
+    .daily-reminder.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+        pointer-events: auto;
+    }
+
+
+    /* انواع حالت‌ها */
+    .daily-reminder.success {
+        background-color: #31BC2F;
+        color: #FCFCFC;
+    }
+
+    .daily-reminder.error {
+        background-color: #D7000E;
+        color: #FCFCFC;
+    }
+
+.daily-reminder.warning {
+    background-color: #FFBF5E;
+    color: #333;
+}
+
+    .daily-reminder.info {
+        background-color: #6600B3;
+        color: #FCFCFC;
+    }
+
+.env-banner {
+    font-weight: bold;
+    font-family: 'IRANYekanXFaNum-Regular';
+    font-size: 0.9rem;
+    border-bottom: 2px solid #ddd;
+    z-index: 9999;
+    position: relative;
+}
+/* فونت و استایل RTL برای منو */
+.offcanvas {
+    font-family: 'IRANYekanXFaNum-Regular';
+    background-color: #00398d; /* پس‌زمینه تیره */
+    color: #fff;
+    width: 255px;
+    transition: transform 0.5s ease-in-out, visibility 0.5s ease-in-out;
+}
+    .offcanvas .nav-link:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+    }
+    /* حذف پرش‌های سریع هنگام مخفی‌سازی */
+    .offcanvas.showing, .offcanvas.hiding {
+        transition: transform 0.5s ease-in-out, visibility 0.5s ease-in-out;
+    }
