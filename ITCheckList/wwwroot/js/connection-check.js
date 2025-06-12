@@ -6,11 +6,29 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function initiateConnectionCheck() {
+    // ❗ جلوگیری از نمایش مجدد swal بررسی اتصال اگر قبلاً تایید شده باشد
+    if (localStorage.getItem('connectionVerified') === 'true') return;
+
+    Swal.fire({
+        title: '🔎 در حال بررسی اتصال به پایگاه داده...',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        backdrop: 'rgba(0,0,0,0.6) blur(8px)',
+        didOpen: () => Swal.showLoading()
+    });
+
     fetch('/Connection/Check', { cache: "no-store" })
         .then(res => {
             if (!res.ok) throw new Error();
+            return res.text();
+        })
+        .then(() => {
+            localStorage.setItem('connectionVerified', 'true'); // ✅ اتصال تأیید شد → دیگر نشان داده نمی‌شود
+            Swal.close();
         })
         .catch(() => {
+            localStorage.removeItem('connectionVerified'); // ❗ خطا → مطمئن شو flag برداشته بشه
+            Swal.close();
             showConnectionForm();
         });
 }
@@ -52,12 +70,30 @@ function renderConnectionForm() {
             authenticationType: document.getElementById('authType').value,
             username: document.getElementById('username').value.trim(),
             password: document.getElementById('password').value
-        })
+        }),
+        didOpen: () => {
+            toggleAuthFields();
+            document.getElementById('authType').addEventListener('change', toggleAuthFields);
+        }
     }).then((result) => {
         if (result.isConfirmed) {
             testConnection(result.value);
         }
     });
+}
+
+function toggleAuthFields() {
+    const authType = document.getElementById('authType').value;
+    const usernameField = document.getElementById('username');
+    const passwordField = document.getElementById('password');
+
+    if (authType === "windows") {
+        usernameField.style.display = "none";
+        passwordField.style.display = "none";
+    } else {
+        usernameField.style.display = "";
+        passwordField.style.display = "";
+    }
 }
 
 function testConnection(data) {
@@ -85,14 +121,14 @@ function testConnection(data) {
         .then(currentConnectionString => {
             if (currentConnectionString.trim() === connectionString.trim()) {
                 resetConnectionAttempts();
-                Swal.close(); // 👈 اتصال موفق → نمایش نده
+                localStorage.setItem('connectionVerified', 'true'); // ✅ اتصال موفق → جلوگیری از بررسی‌های مجدد
+                Swal.close();
                 location.reload();
             } else {
-                // تست صحت رشته اتصال
                 fetch('/Connection/TestLoginConnection', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ connectionString })
+                    body: JSON.stringify(data)
                 })
                     .then(response => {
                         if (response.status === 429) return response.text().then(msg => { throw new Error(msg); });
@@ -101,9 +137,11 @@ function testConnection(data) {
                     })
                     .then(msg => {
                         resetConnectionAttempts();
+                        localStorage.setItem('connectionVerified', 'true'); // ✅ اتصال موفق → جلوگیری از بررسی‌های مجدد
                         Swal.fire("✅ عملیات موفق", msg, "success").then(() => location.reload());
                     })
                     .catch(err => {
+                        localStorage.removeItem('connectionVerified'); // ❗ خطا → حذف flag → بررسی مجدد در آینده
                         incrementConnectionAttempts();
                         Swal.fire("❌ خطا", err.message, "error").then(() => {
                             showConnectionForm();
@@ -112,6 +150,7 @@ function testConnection(data) {
             }
         })
         .catch(() => {
+            localStorage.removeItem('connectionVerified'); // ❗ خطا → حذف flag → بررسی مجدد در آینده
             Swal.fire("❌ خطا", "عدم دسترسی به رشته اتصال فعلی.", "error");
         });
 }

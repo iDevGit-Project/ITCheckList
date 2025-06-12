@@ -23,6 +23,13 @@ namespace ITCheckList.Controllers
             _cache = cache;
         }
 
+        [HttpPost("ResetCache")]
+        public IActionResult ResetConnectionCache()
+        {
+            _cache.Remove(_cacheKey);
+            return Ok(".کش رشته اتصال با موفقیت پاک شد.");
+        }
+
         [HttpGet("Check")]
         public IActionResult Check()
         {
@@ -58,17 +65,36 @@ namespace ITCheckList.Controllers
         [HttpPost("TestLoginConnection")]
         public IActionResult TestLoginConnection([FromBody] ConnectionInput input)
         {
+            if (string.IsNullOrWhiteSpace(input.Server))
+                return BadRequest("فیلد Server الزامی است.");
+
+            if (string.IsNullOrWhiteSpace(input.Database))
+                return BadRequest("فیلد Database الزامی است.");
+
+            if (string.IsNullOrWhiteSpace(input.AuthenticationType))
+                return BadRequest("فیلد AuthenticationType الزامی است.");
+
+            if (input.AuthenticationType == "sql")
+            {
+                if (string.IsNullOrWhiteSpace(input.Username))
+                    return BadRequest("برای SQL Authentication، فیلد Username الزامی است.");
+
+                if (string.IsNullOrWhiteSpace(input.Password))
+                    return BadRequest("برای SQL Authentication، فیلد Password الزامی است.");
+            }
+
             try
             {
                 var connectionString = BuildConnectionString(input);
-
                 using (var connection = new SqlConnection(connectionString))
                 {
                     connection.Open();
                 }
 
                 UpdateConnectionStringInAppSettings(connectionString);
-                _cache.Set(_cacheKey, connectionString); // 👈 ذخیره در کش
+
+                // حذف کش پس از بروزرسانی رشته اتصال
+                _cache.Remove(_cacheKey);
 
                 return Ok("✅ اتصال برقرار شد و اطلاعات ذخیره شد.");
             }
@@ -86,7 +112,11 @@ namespace ITCheckList.Controllers
         {
             if (!_cache.TryGetValue(_cacheKey, out string cachedConnectionString))
             {
-                cachedConnectionString = _configuration.GetConnectionString("StrConDb") ?? string.Empty;
+                // به جای استفاده از IConfiguration، فایل را مستقیماً بخوان
+                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "appsettings.json");
+                var json = JObject.Parse(System.IO.File.ReadAllText(filePath));
+                cachedConnectionString = json["ConnectionStrings"]?["StrConDb"]?.ToString() ?? string.Empty;
+
                 _cache.Set(_cacheKey, cachedConnectionString);
             }
             return cachedConnectionString;
