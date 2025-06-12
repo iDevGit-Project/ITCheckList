@@ -1,4 +1,5 @@
-﻿@model List<ITCheckList.Models.TBL_CheckItem>
+﻿@using ITCheckList.Extentions
+@model List<ITCheckList.Models.TBL_CheckItem>
 @{
     ViewData["Title"] = "لیست بررسی‌های روزانه";
     var items = ViewBag.Items as List<TBL_CheckItem>;
@@ -90,11 +91,7 @@
                         <td class="text-end">@item.Description</td>
 
                         <!-- تبدیل به شمسی در کلاینت -->
-                        <td>
-                            <span class="shamsi-date" data-date="@item.CreatedAt.ToString("o")">
-                                @item.CreatedAt.ToString("yyyy/MM/dd") <!-- fallback -->
-                            </span>
-                        </td>
+                        <td class="text-center" dir="ltr">@item.CreatedAt.ToShamsi()</td> <!-- 👈 تاریخ شمسی دقیق -->
 
                         <td class="text-end">@item.Note</td>
 

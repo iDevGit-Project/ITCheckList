@@ -20,5 +20,6 @@ namespace ITCheckList.Controllers
 
             return View(logs);
         }
+
     }
 }

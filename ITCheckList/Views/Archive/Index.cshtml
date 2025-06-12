@@ -1,4 +1,5 @@
-﻿@model IEnumerable<TBL_CheckItemArchive>
+﻿@using ITCheckList.Extentions
+@model IEnumerable<TBL_CheckItemArchive>
 
 <h3 class="text-center fw-bold">گزارش کارهای بایگانی شده</h3>
 
@@ -30,7 +31,7 @@
                     <td>@item.CreatedAt.ToString("yyyy/MM/dd")</td>
                     <td>@item.Note</td>
                     <td>@(item.Status ? "انجام شد." : "در دست اقدام")</td>
-                    <td>@item.ArchivedAt.ToString("yyyy/MM/dd HH:mm")</td>
+                    <td class="text-start" dir="ltr">@item.ArchivedAt.ToShamsi()</td> <!-- 👈 تاریخ شمسی دقیق -->
                     <td>
                         @(item.Status ? "اتمام کار" : "")
                     </td>
@@ -39,18 +40,48 @@
         }
     </tbody>
 </table>
-<script>
-    $(function () {
-        var message = '@TempData["Success"]';
-        if (message) {
-            toastr.success(message, 'عملیات موفقیت‌آمیز', {
-                timeOut: 3500,
-                rtl: true,
-                progressBar: true,
-                closeButton: true,
-                positionClass: "toast-top-left",
-                backgroundColor: "#0056B3"
-            });
+<!--=================================================================-->
+@section ITCheckListArchivescripts {
+    <script>
+        $(function () {
+            var message = '@TempData["Success"]';
+            if (message) {
+                toastr.success(message, 'عملیات موفقیت‌آمیز', {
+                    timeOut: 3500,
+                    rtl: true,
+                    progressBar: true,
+                    closeButton: true,
+                    positionClass: "toast-top-left",
+                    backgroundColor: "#0056B3"
+                });
+            }
+        });
+    </script>
+    <!--=================================================================-->
+    <!--فراخوانی اسکریپت نمایش و  تبدیل تاریخ شمسی-->
+    <script>
+        function toShamsi(gDate) {
+            const g_y = gDate.getFullYear(), g_m = gDate.getMonth() + 1, g_d = gDate.getDate();
+            const g_days_in_month = [31,28,31,30,31,30,31,31,30,31,30,31];
+            const j_days_in_month = [31,31,31,31,31,31,30,30,30,30,30,29];
+            const div = (a, b) => Math.floor(a / b);
+            let gy = g_y - 1600, gm = g_m - 1, gd = g_d - 1;
+            let g_day_no = 365 * gy + div((gy + 3), 4) - div((gy + 99), 100) + div((gy + 399), 400);
+            for (let i = 0; i < gm; ++i) g_day_no += g_days_in_month[i];
+            if (gm > 1 && ((gy % 4 == 0 && gy % 100 != 0) || (gy % 400 == 0))) ++g_day_no;
+            g_day_no += gd;
+            let j_day_no = g_day_no - 79;
+            let j_np = div(j_day_no, 12053); j_day_no %= 12053;
+            let jy = 979 + 33 * j_np + 4 * div(j_day_no, 1461); j_day_no %= 1461;
+            if (j_day_no >= 366) {
+                jy += div((j_day_no - 1), 365);
+                j_day_no = (j_day_no - 1) % 365;
+            }
+            let jm, jd;
+            for (var i = 0; i < 11 && j_day_no >= j_days_in_month[i]; ++i) j_day_no -= j_days_in_month[i];
+            jm = i + 1; jd = j_day_no + 1;
+            return { year: jy, month: jm.toString().padStart(2, '0'), day: jd.toString().padStart(2, '0') };
         }
-    });
-</script>
+    </script>
+    <!--=================================================================-->
+}

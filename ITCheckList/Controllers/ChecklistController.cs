@@ -320,68 +320,6 @@ namespace ITCheckList.Controllers
             }
         }
 
-        //[HttpPost]
-        //public async Task<IActionResult> ArchiveToday(bool deleteAfterArchive = false)
-        //{
-        //    try
-        //    {
-        //        var today = DateTime.Today;
-
-        //        var todayItems = await _context.TBLCheckItems
-        //            .Where(x => x.CreatedAt.Date == today && x.Status == true)
-        //            .ToListAsync();
-
-        //        if (!todayItems.Any())
-        //        {
-        //            return BadRequest("موردی برای بایگانی یافت نشد.");
-        //        }
-
-        //        var archivedItemsToday = await _context.TBLCheckItemArchives
-        //            .Where(x => x.CreatedAt.Date == today)
-        //            .ToListAsync();
-
-        //        var itemsToArchive = todayItems
-        //            .Where(item => !archivedItemsToday.Any(a =>
-        //                a.Section == item.Section &&
-        //                a.Description == item.Description &&
-        //                a.Note == item.Note &&
-        //                a.Status == item.Status))
-        //            .ToList();
-
-        //        if (!itemsToArchive.Any())
-        //        {
-        //            return BadRequest("تمام موارد امروز قبلاً در بایگانی ثبت شده‌اند.");
-        //        }
-
-        //        var archiveItems = itemsToArchive.Select(x => new TBL_CheckItemArchive
-        //        {
-        //            Section = x.Section,
-        //            Description = x.Description,
-        //            CreatedAt = x.CreatedAt,
-        //            Note = x.Note,
-        //            Status = x.Status
-        //        }).ToList();
-
-        //        await _context.TBLCheckItemArchives.AddRangeAsync(archiveItems);
-
-        //        if (deleteAfterArchive)
-        //        {
-        //            _context.TBLCheckItems.RemoveRange(itemsToArchive);
-        //        }
-
-        //        await _context.SaveChangesAsync();
-
-        //        // حذف کش بعد از آرشیو (که احتمالا داده‌ها تغییر کرده‌اند)
-        //        _cache.Remove(CacheKey);
-
-        //        return Ok("بایگانی با موفقیت انجام شد.");
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, "خطا در بایگانی: " + ex.Message);
-        //    }
-        //}
-
         [HttpGet]
         public async Task<JsonResult> CheckPreviousDayData()
         {
