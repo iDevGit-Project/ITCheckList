@@ -1,0 +1,102 @@
+﻿@using ITCheckList.Extentions
+@model List<TBL_LogEntry>
+<!-- اضافه کردن Font Awesome از CDN -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+
+<h2 class="text-center fw-bold p-3">گزارش فعالیت‌های سیستم</h2>
+
+<div class="table-responsive">
+    <table id="logTable" class="table table-bordered text-center align-middle" dir="rtl">
+        <thead class="table-light text-center">
+            <tr>
+                <th class="text-center">کاربر</th>
+                <th class="text-center">عملیات</th>
+                <th class="text-center">موجودیت</th>
+                <th class="text-center">نام متد</th>
+                <th class="text-center">توضیح</th>
+                <th class="text-center">تاریخ</th>
+                <th class="text-center">IP</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var log in Model)
+            {
+                <tr>
+                    <td class="text-start">@log.Username</td>
+                    <td class="text-center">@log.EntityId</td>
+                    <td class="text-start">@log.EntityName</td>
+                    <td class="text-start">@log.Action</td>
+                    <td class="text-end">@log.Description</td>
+                    <td class="text-start" dir="ltr">@log.Timestamp.ToShamsi()</td> <!-- 👈 تاریخ شمسی دقیق -->
+                    <td class="text-start">@log.IP</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@section ITCheckListLogsscripts {
+    <!--=================================================================-->
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <!--=================================================================-->
+    <!--فراخوانی اسکریپت نمایش و  تبدیل تاریخ شمسی-->
+    <script>
+        function toShamsi(gDate) {
+            const g_y = gDate.getFullYear(), g_m = gDate.getMonth() + 1, g_d = gDate.getDate();
+            const g_days_in_month = [31,28,31,30,31,30,31,31,30,31,30,31];
+            const j_days_in_month = [31,31,31,31,31,31,30,30,30,30,30,29];
+            const div = (a, b) => Math.floor(a / b);
+            let gy = g_y - 1600, gm = g_m - 1, gd = g_d - 1;
+            let g_day_no = 365 * gy + div((gy + 3), 4) - div((gy + 99), 100) + div((gy + 399), 400);
+            for (let i = 0; i < gm; ++i) g_day_no += g_days_in_month[i];
+            if (gm > 1 && ((gy % 4 == 0 && gy % 100 != 0) || (gy % 400 == 0))) ++g_day_no;
+            g_day_no += gd;
+            let j_day_no = g_day_no - 79;
+            let j_np = div(j_day_no, 12053); j_day_no %= 12053;
+            let jy = 979 + 33 * j_np + 4 * div(j_day_no, 1461); j_day_no %= 1461;
+            if (j_day_no >= 366) {
+                jy += div((j_day_no - 1), 365);
+                j_day_no = (j_day_no - 1) % 365;
+            }
+            let jm, jd;
+            for (var i = 0; i < 11 && j_day_no >= j_days_in_month[i]; ++i) j_day_no -= j_days_in_month[i];
+            jm = i + 1; jd = j_day_no + 1;
+            return { year: jy, month: jm.toString().padStart(2, '0'), day: jd.toString().padStart(2, '0') };
+        }
+    </script>
+    <!--=================================================================-->
+    <!--فراخوانی اسکریپت سفارشی سازی جدول-->
+    <script>
+        $(document).ready(function () {
+            $('#logTable').DataTable({
+                paging: true,
+                pageLength: 10,
+                searching: true,
+                ordering: true,
+                language: {
+                    "decimal": "",
+                    "emptyTable": "هیچ داده‌ای در جدول وجود ندارد",
+                    "info": "نمایش _START_ تا _END_ از _TOTAL_ رکورد",
+                    "infoEmpty": "نمایش 0 تا 0 از 0 رکورد",
+                    "infoFiltered": "(فیلتر شده از _MAX_ رکورد)",
+                    "lengthMenu": "نمایش _MENU_ رکورد",
+                    "loadingRecords": "در حال بارگذاری...",
+                    "processing": "در حال پردازش...",
+                    "search": "جستجو:",
+                    "zeroRecords": "رکوردی مطابق با جستجوی شما یافت نشد",
+                    "paginate": {
+                        "first": "اولین",
+                        "last": "آخرین",
+                        "next": "بعدی",
+                        "previous": "قبلی"
+                    },
+                    "aria": {
+                        "sortAscending": ": فعال‌سازی مرتب‌سازی صعودی",
+                        "sortDescending": ": فعال‌سازی مرتب‌سازی نزولی"
+                    }
+                }
+            });
+        });
+    </script>
+ }
