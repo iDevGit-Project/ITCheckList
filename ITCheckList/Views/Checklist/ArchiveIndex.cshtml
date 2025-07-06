@@ -3,22 +3,27 @@
 @{
     ViewData["Title"] = "گزارش بایگانی بر اساس تاریخ";
     Layout = "~/Views/Shared/_Layout.cshtml";
-    <link href="~/css/site.css" rel="stylesheet" />
 }
 <!--=================================================================-->
-
-<h2 class="text-center fw-bold mt-4">گزارش بایگانی بر اساس تاریخ</h2>
-<h5 class="text-center mt-3">.جهت نمایش اطلاعات، تاریخ خورد را از ورودی زیر انتخاب نمایید</h5>
-<div class="d-flex justify-content-center mt-4">
-    <form method="post" asp-action="ArchiveIndex" onsubmit="startLoader()" class="d-flex align-items-center gap-2 flex-wrap flex-sm-nowrap">
-        <input type="text" id="selectedDate" name="selectedDate"
-               placeholder="تاریخ را انتخاب کنید"
-               class="form-control w-auto text-center"
-               autocomplete="off" />
-        <button type="submit" class="btn btn-outline-primary custom-btn">نمایش گزارش</button>
-    </form>
+<div class="card text-center cardbox-shadow gap-3">
+    <div class="card-header">
+        گزارش بایگانی بر اساس تاریخ
+    </div>
+    <div class="card-body" dir="rtl">
+        <h5 class="text-center mt-3">.جهت نمایش اطلاعات، تاریخ خورد را از ورودی زیر انتخاب نمایید</h5>
+        <p class="card-text">کاربرگرامی: جهت دسترسی به هر آیتم، دکمه مربوطه را کلیک نمایید.</p>
+        <form method="post" asp-action="ArchiveIndex" onsubmit="startLoader()" class="d-flex gap-2 flex-wrap flex-sm-nowrap">
+            <input type="text" id="selectedDate" name="selectedDate"
+                   placeholder="تاریخ را انتخاب کنید"
+                   class="form-control w-auto text-center"
+                   autocomplete="off" />
+            <button type="submit" class="btn btn-outline-primary fw-bold text-primary-emphasis bg-primary-subtle border border-primary-subtle">نمایش گزارش</button>
+        </form>
+    </div>
+    <div class="card-footer text-body-secondary">
+        <button class="btn btn-outline-primary fw-bold text-primary-emphasis bg-primary-subtle border border-primary-subtle" onclick="printArchiveReport()">دریافت خروجی از اطلاعات</button>
+    </div>
 </div>
-
 
 @if (ViewBag.ErrorMessage != null)
 {
@@ -32,7 +37,7 @@
 
 @if (Model != null && Model.Any())
 {
-    <table id="archiveTable" class="table table-bordered mt-4" dir="rtl">
+    <table id="archiveTable" class="table table-bordered mt-4 d-none d-md-table" dir="rtl">
         <thead class="table-light text-center">
             <tr>
                 <th>ردیف</th>
@@ -52,28 +57,43 @@
                     <td>@Model[i].Description</td>
                     <td>@Model[i].Note</td>
                     <td>@(Model[i].Status ? "انجام شد" : "انجام نشده")</td>
-                    <td class="text-start" dir="ltr">@Model[i].ArchivedAt.ToShamsi()</td> <!-- 👈 تاریخ شمسی دقیق -->
+                    <td class="text-start" dir="ltr">@Model[i].ArchivedAt.ToShamsi()</td>
                 </tr>
             }
         </tbody>
     </table>
 }
 
-<!-- دکمه دریافت خروجی -->
-<div class="text-center mt-3">
-    <button class="btn custom-btn btn-outline-primary" onclick="printArchiveReport()">دریافت خروجی از اطلاعات</button>
-</div>
+@if (Model != null && Model.Any())
+{
+    <div class="d-block d-md-none">
+        <!-- نمایش در موبایل -->
+        <div class="ArchiveMobile-container">
+            <div class="ArchiveMobile-cards-scroll">
+                @for (int i = 0; i < Model.Count; i++)
+                {
+                    <div class="cardArchiveMobile mb-3">
+                        <div class="cardArchiveMobile-body">
+                            <p class="text-fixedCard"><strong>نام بخش : </strong> @Model[i].Section</p>
+                            <p class="text-fixedCard"><strong>توضیحات : </strong> @Model[i].Description</p>
+                            <p class="text-fixedCard"><strong>یادداشت : </strong> @Model[i].Note</p>
+                            <p class="text-fixedCard"><strong>وضعیت : </strong> @(Model[i].Status ? "انجام شد" : "انجام نشده")</p>
+                            <p class="text-fixedCard"><strong>تاریخ و ساعت ثبت : </strong> @Model[i].ArchivedAt.ToShamsi()</p>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
 
 <!--=================================================================-->
 @section ITCheckListArciveView {
     <!-- کتابخانه‌ها -->
-    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" asp-append-version="true"></script>
-    <script src="https://cdn.jsdelivr.net/npm/persian-date/dist/persian-date.min.js" asp-append-version="true"></script>
-    <script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js" asp-append-version="true"></script>
-    <link href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" asp-append-version="true"></script>
-    <script src="https://printjs-4de6.kxcdn.com/print.min.js" asp-append-version="true"></script>
-    <link rel="stylesheet" href="https://printjs-4de6.kxcdn.com/print.min.css">
+    <script src="~/lib/persian-date/persian-date.min.js"></script>
+    <script src="~/lib/persian-datepicker/js/persian-datepicker.min.js"></script>
+    <link href="~/lib/persian-datepicker/css/persian-datepicker.css" rel="stylesheet" />
+    <link href="~/lib/persian-datepicker/css/persian-datepicker.min.css" rel="stylesheet" />
     <script src="~/lib/printArchiveReport.js" asp-append-version="true"></script>
     <script src="~/lib/data-loading.js" asp-append-version="true"></script>
 <!--=================================================================-->

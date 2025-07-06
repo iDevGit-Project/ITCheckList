@@ -1,72 +1,93 @@
-﻿@using ITCheckList.Extentions
-@model List<TBL_LogEntry>
-<!-- اضافه کردن Font Awesome از CDN -->
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+﻿@model List<TBL_LogEntry>
 
 <h2 class="text-center fw-bold p-3">گزارش فعالیت‌های سیستم</h2>
-
-<div class="table-responsive">
-    <table id="logTable" class="table table-bordered text-center align-middle" dir="rtl">
-        <thead class="table-light text-center">
-            <tr>
-                <th class="text-center">کاربر</th>
-                <th class="text-center">عملیات</th>
-                <th class="text-center">موجودیت</th>
-                <th class="text-center">نام متد</th>
-                <th class="text-center">توضیح</th>
-                <th class="text-center">تاریخ</th>
-                <th class="text-center">IP</th>
-            </tr>
-        </thead>
-        <tbody>
+<!--=================================================================-->
+<div class="d-none d-md-block">
+    <!-- نمایش در دسکتاپ -->
+    <div class="table-responsive">
+        <table id="logTable" class="table table-bordered text-center align-middle" dir="rtl">
+            <thead class="table-light text-center">
+                <tr>
+                    <th class="text-center">کاربر</th>
+                    <th class="text-center">عملیات</th>
+                    <th class="text-center">تاریخ</th>
+                    <th class="text-center">موجودیت</th>
+                    <th class="text-center">نام متد</th>
+                    <th class="text-center">توضیح</th>
+                    <th class="text-center">IP</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var log in Model)
+                {
+                    <tr>
+                        <td class="text-center">@log.Username</td>
+                        <td class="text-center">@log.EntityId</td>
+                        <td class="text-center">@log.Timestamp.ToString("yyyy/MM/dd HH:mm")</td>
+                        <td class="text-start">@log.EntityName</td>
+                        <td class="text-start">@log.Action</td>
+                        <td class="text-end">@log.Description</td>
+                        <td class="text-center">@log.IP</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+<!--=================================================================-->
+<div class="d-block d-md-none">
+    <!-- نمایش در موبایل -->
+    <div class="log-cards-container">
+        <div class="log-cards-scroll">
             @foreach (var log in Model)
             {
-                <tr>
-                    <td class="text-start">@log.Username</td>
-                    <td class="text-center">@log.EntityId</td>
-                    <td class="text-start">@log.EntityName</td>
-                    <td class="text-start">@log.Action</td>
-                    <td class="text-end">@log.Description</td>
-                    <td class="text-start" dir="ltr">@log.Timestamp.ToShamsi()</td> <!-- 👈 تاریخ شمسی دقیق -->
-                    <td class="text-start">@log.IP</td>
-                </tr>
+                <div class="log-card">
+                    <div class="text-fixedCard"><strong>کاربر : </strong> @log.Username</div>
+                    <div class="text-fixedCard"><strong>عملیات : </strong> @log.EntityId</div>
+                    <div class="text-fixedCard"><strong>تاریخ : </strong> @log.Timestamp.ToString("yyyy/MM/dd HH:mm")</div>
+                    <div class="text-fixedCard txtEN"><strong>موجودیت : </strong> @log.EntityName</div>
+                    <div class="text-fixedCard"><strong>نام متد : </strong> @log.Action</div>
+                    <div class="log-description txtEN">
+                        <strong>توضیح : </strong>
+                        @(log.Description?.Length > 25
+                            ? log.Description.Substring(0, 30) + ".."
+                            : log.Description)
+                    </div>
+                    <div class="d-block-custome d-md-none">
+                        <button class="btn btn-link p-0 ms-1" onclick="showDescriptionModal('@log.Description?.Replace("'", "\\'")')"><span class="text-fixedCard d-inline-flex px-2 py-1 fw-semibold text-primary-emphasis bg-primary-subtle border border-primary-subtle rounded-2 me-2">اطلاعات بیشتر</span></button>
+                        <div class="text-fixedCard d-inline-flex px-2 py-1 fw-semibold text-danger-emphasis bg-danger-subtle border border-danger-subtle rounded-2 me-2 txtEN ip-box " style="direction:ltr"><strong>IP system :</strong> @log.IP</div>
+                    </div>
+                </div>
             }
-        </tbody>
-    </table>
+        </div>
+    </div>
 </div>
-
+<!--=================================================================-->
+<div class="d-block d-md-none text-center my-3">
+    <button id="prevPage" class="btn btn-secondary fw-semibold text-primary-emphasis bg-primary-subtle border border-primary-subtle me-2 btn-sm me-2">قبلی</button>
+    <span id="pageInfo" class="mx-2"></span>
+    <button id="nextPage" class="btn btn-secondary fw-semibold text-primary-emphasis bg-primary-subtle border border-primary-subtle me-2 btn-sm me-2">بعدی</button>
+</div>
+<!--=================================================================-->
+<!--نمایش مودال جزئیات بیشتر در جدول لاگ های سیستم-->
+<div class="modal fade" id="descriptionModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-end" dir="rtl">
+            <div class="modal-header custom-modal-header justify-content-between">
+                <h5 class="modal-title">توضیحات کامل</h5>
+            </div>
+            <div class="modal-body">
+                <p id="descriptionModalContent" class="text-break"></p>
+            </div>
+            <div class="modal-footer justify-content-start">
+                <!-- دکمه بازگشت -->
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">بازگشت</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--=================================================================-->
 @section ITCheckListLogsscripts {
-    <!--=================================================================-->
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
-    <!--=================================================================-->
-    <!--فراخوانی اسکریپت نمایش و  تبدیل تاریخ شمسی-->
-    <script>
-        function toShamsi(gDate) {
-            const g_y = gDate.getFullYear(), g_m = gDate.getMonth() + 1, g_d = gDate.getDate();
-            const g_days_in_month = [31,28,31,30,31,30,31,31,30,31,30,31];
-            const j_days_in_month = [31,31,31,31,31,31,30,30,30,30,30,29];
-            const div = (a, b) => Math.floor(a / b);
-            let gy = g_y - 1600, gm = g_m - 1, gd = g_d - 1;
-            let g_day_no = 365 * gy + div((gy + 3), 4) - div((gy + 99), 100) + div((gy + 399), 400);
-            for (let i = 0; i < gm; ++i) g_day_no += g_days_in_month[i];
-            if (gm > 1 && ((gy % 4 == 0 && gy % 100 != 0) || (gy % 400 == 0))) ++g_day_no;
-            g_day_no += gd;
-            let j_day_no = g_day_no - 79;
-            let j_np = div(j_day_no, 12053); j_day_no %= 12053;
-            let jy = 979 + 33 * j_np + 4 * div(j_day_no, 1461); j_day_no %= 1461;
-            if (j_day_no >= 366) {
-                jy += div((j_day_no - 1), 365);
-                j_day_no = (j_day_no - 1) % 365;
-            }
-            let jm, jd;
-            for (var i = 0; i < 11 && j_day_no >= j_days_in_month[i]; ++i) j_day_no -= j_days_in_month[i];
-            jm = i + 1; jd = j_day_no + 1;
-            return { year: jy, month: jm.toString().padStart(2, '0'), day: jd.toString().padStart(2, '0') };
-        }
-    </script>
-    <!--=================================================================-->
-    <!--فراخوانی اسکریپت سفارشی سازی جدول-->
     <script>
         $(document).ready(function () {
             $('#logTable').DataTable({
@@ -99,4 +120,55 @@
             });
         });
     </script>
- }
+    <!--=================================================================-->
+    <!--نمایش مودال جزئیات بیشتر در جدول لاگ های سیستم-->
+    <script>
+        function showDescriptionModal(text) {
+            document.getElementById('descriptionModalContent').textContent = text;
+            var modal = new bootstrap.Modal(document.getElementById('descriptionModal'));
+            modal.show();
+        }
+    </script>
+    <!--=================================================================-->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const cards = document.querySelectorAll('.log-card');
+            const pageSize = 5;
+            let currentPage = 1;
+            const totalPages = Math.ceil(cards.length / pageSize);
+
+            function renderPage() {
+                cards.forEach((card, index) => {
+                    if (index >= (currentPage - 1) * pageSize && index < currentPage * pageSize) {
+                        card.style.display = 'block';
+                        // برای ریست کردن انیمیشن:
+                        card.classList.remove('show');
+                        void card.offsetWidth; // ری‌فلش DOM
+                        card.classList.add('show');
+                    } else {
+                        card.style.display = 'none';
+                        card.classList.remove('show');
+                    }
+                });
+                document.getElementById('pageInfo').textContent = `صفحه :  ${currentPage} از ${totalPages}`;
+            }
+
+            document.getElementById('prevPage').addEventListener('click', function () {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderPage();
+                }
+            });
+
+            document.getElementById('nextPage').addEventListener('click', function () {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderPage();
+                }
+            });
+
+            renderPage();
+        });
+    </script>
+
+}

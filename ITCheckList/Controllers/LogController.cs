@@ -20,6 +20,20 @@ namespace ITCheckList.Controllers
 
             return View(logs);
         }
+        [HttpGet]
+        public JsonResult IsLogTableEmpty()
+        {
+            bool isEmpty = !_context.TBLLogEntries.Any();
+            return Json(new { isEmpty });
+        }
+        public IActionResult PrintAllLogs()
+        {
+            var logs = _context.TBLLogEntries
+                .OrderByDescending(x => x.Timestamp)
+                .ToList();
+
+            return View("PrintAllLogs", logs); // نمای جداگانه برای چاپ
+        }
 
     }
 }

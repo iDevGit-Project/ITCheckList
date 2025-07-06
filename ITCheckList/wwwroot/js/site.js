@@ -43,3 +43,19 @@ function toPersianDate(date) {
 
     return `${jy}/${jm.toString().padStart(2, '0')}/${jd.toString().padStart(2, '0')}`;
 }
+function exportCardsToPdf() {
+    const { jsPDF } = window.jspdf; // دسترسی درست به jsPDF
+    const doc = new jsPDF('p', 'mm', 'a4');
+    let y = 10;
+    document.querySelectorAll('.log-card').forEach(card => {
+        const text = card.innerText;
+        doc.text(text, 10, y);
+        y += 40; // فاصله بین کارت‌ها
+        if (y > 270) { // اگر نزدیک ته صفحه شد، صفحه جدید
+            doc.addPage();
+            y = 10;
+        }
+    });
+    doc.save('logs.pdf');
+}
+

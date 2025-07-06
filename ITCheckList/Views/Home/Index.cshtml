@@ -1,15 +1,24 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
 }
-<div class="mt-5 d-flex justify-content-center align-items-center" dir="rtl">
-    <div class="text-center">
-        <h4 class="fw-bold">مدیریت چک لیست روزانه</h4>
-        <!-- نوار ابزار بالا -->
-        <div class="d-flex flex-wrap align-items-center gap-3 my-3 justify-content-center">
-            <a class="btn btn-primary" type="button" asp-area="" asp-controller="Checklist" asp-action="Index" onclick="startLoader()">مدیریت اطلاعات</a>
-            <a class="btn btn-primary" type="button" asp-area="" asp-controller="Checklist" asp-action="ArchiveIndex" onclick="startLoader()">آرشیو اطلاعات</a>
-            <a class="btn btn-dark" type="button" asp-area="" asp-controller="Log" asp-action="Index" onclick="startLoader()">لاگ های سیستم</a>
-            <a class="btn btn-dark" type="button" asp-area="" asp-controller="SystemSettings" asp-action="Index" onclick="startLoader()">تنظیمات سیستم</a>
-        </div>
+<div class="card text-center  gap-3">
+    <div class="card-header">
+        ابزارهای کاربردی
     </div>
+    <div class="card-body" dir="rtl">
+        <h5 class="card-title">ورود به آیتم های برنامه</h5>
+        <p class="card-text">کاربرگرامی: جهت دسترسی به هر آیتم، دکمه مربوطه را کلیک نمایید.</p>
+        <a class="btn btn-dark text-emphasis-color bg-emphasis-subtle" type="button" asp-area="" asp-controller="Checklist" asp-action="Index" onclick="startLoader()">مدیریت اطلاعات</a>
+        <a class="btn btn-dark text-emphasis-color bg-emphasis-subtle" type="button" asp-area="" asp-controller="Checklist" asp-action="ArchiveIndex" onclick="startLoader()">آرشیو اطلاعات</a>
+        <a class="btn btn-dark text-emphasis-color bg-emphasis-subtle" type="button" asp-area="" asp-controller="Log" asp-action="Index" onclick="startLoader()">لاگ های سیستم</a>
+    </div>
+    <div class="card-footer text-body-secondary">
+        نسخه جاری: 1.0.1
+    </div>
+</div>
+<div class="alert text-center text-start text-warning-emphasis bg-warning-subtle mt-3" role="alert" dir="rtl">
+    <h4 class="alert-heading fw-bold">نسخه آزمایشی نرم افزار</h4>
+    <p>شما در حال کار با نسخه آزمایشی نرم افزار هستید.</p>
+    <hr>
+    <p class="mb-0">در صورت بروز هرگونه مشکل، با شماره <span class="fw-bold">09171279764</span> تماس بگیرید.</p>
 </div>

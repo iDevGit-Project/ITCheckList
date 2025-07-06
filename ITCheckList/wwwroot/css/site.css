@@ -11,6 +11,19 @@
     font-display: swap;
 }
 
+body, button, input, select, textarea, .form-control, .nav-link, .offcanvas-title, .dropdown-item, .card, table, th, td {
+    font-family: 'IRANYekanXFaNum-Regular', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+}
+
+/*body {
+    margin-bottom: 50px;
+    font-family: 'IRANYekanXFaNum-Regular', 'SFProAuto', sans-serif;
+}*/
+/* استثنا برای آیکن‌ها */
+.bi, .fa, .fas, .far, .fal, .fad, .fab {
+    font-family: initial !important;
+}
+
 html {
     font-size: 14px;
     font-family: 'IRANYekanXFaNum-Regular', 'SFProAuto';
@@ -30,11 +43,6 @@ html {
 html {
     position: relative;
     min-height: 100%;
-}
-
-body {
-    margin-bottom: 60px;
-    font-family: 'IRANYekanXFaNum-Regular';
 }
 
 @media (max-width: 768px) {
@@ -134,12 +142,12 @@ body {
     transition: background-color 0.3s ease, transform 0.3s ease; /* اضافه کردن افکت‌های انتقال */
 }
 
-.custom-btn-danger:hover {
-    background-color: #A5000A; /* تغییر پس‌زمینه در حالت hover */
-    transform: translateY(-2px); /* بالا بردن دکمه در حالت hover */
-    box-shadow: 0 6px 10px rgba(0, 123, 255, 0.3); /* افزایش سایه در حالت hover */
-    cursor: pointer; /* تغییر موس به pointer */
-}
+    .custom-btn-danger:hover {
+        background-color: #A5000A; /* تغییر پس‌زمینه در حالت hover */
+        transform: translateY(-2px); /* بالا بردن دکمه در حالت hover */
+        box-shadow: 0 6px 10px rgba(0, 123, 255, 0.3); /* افزایش سایه در حالت hover */
+        cursor: pointer; /* تغییر موس به pointer */
+    }
 
     .custom-btn-danger:focus {
         outline: none; /* حذف outline */
@@ -450,12 +458,12 @@ div.dataTables_wrapper div.dataTables_filter label {
         height: 2px;
         bottom: 0;
         right: 0;
-        background-color: #0d6efd; /* رنگ آبی Bootstrap */
+        background-color: #052c65; /* رنگ آبی Bootstrap */
         transition: width 0.3s ease;
     }
 
     .nav-animated:hover {
-        color: #0d6efd !important;
+        color: #052c65 !important;
         transform: translateY(-2px);
     }
 
@@ -473,6 +481,7 @@ select:focus {
     outline: none !important;
     box-shadow: none !important;
 }
+
 #overlay-loader div {
     text-align: center;
     font-size: 16px;
@@ -481,9 +490,11 @@ select:focus {
 .spinner-border {
     margin-bottom: 15px;
 }
+
 .bg-warning-subtle {
     background-color: #fff8dc !important; /* زرد خیلی ملایم */
 }
+
 .custom-swal-width {
     width: auto !important;
     max-width: 90vw; /* برای اینکه خیلی بزرگ نشه در صفحه‌های کوچک */
@@ -496,11 +507,13 @@ select:focus {
     font-size: 15px;
     white-space: nowrap;
 }
+
 .swal2-popup.custom-swal-rtl {
     direction: rtl;
     text-align: right;
     font-family: 'IRANYekanXFaNum-Regular';
 }
+
 .status-badge {
     transition: opacity 0.4s ease-in-out;
 }
@@ -526,6 +539,7 @@ select:focus {
         opacity: 1;
     }
 }
+
 .blink-row {
     animation: blink 1s linear infinite;
 }
@@ -543,6 +557,7 @@ select:focus {
         background-color: #fff3cd;
     }
 }
+
 .pending-row-highlight .status-badge {
     animation: blink 1s infinite;
 }
@@ -570,6 +585,7 @@ select:focus {
     text-align: center;
     pointer-events: none;
 }
+
 .daily-reminder-container {
     position: fixed;
     top: 20px;
@@ -582,33 +598,34 @@ select:focus {
     align-items: center;
     pointer-events: none;
 }
-    .daily-reminder.show {
-        opacity: 1;
-        transform: translateX(-50%) translateY(0);
-        pointer-events: auto;
-    }
+
+.daily-reminder.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+    pointer-events: auto;
+}
 
 
-    /* انواع حالت‌ها */
-    .daily-reminder.success {
-        background-color: #31BC2F;
-        color: #FCFCFC;
-    }
+/* انواع حالت‌ها */
+.daily-reminder.success {
+    background-color: #31BC2F;
+    color: #FCFCFC;
+}
 
-    .daily-reminder.error {
-        background-color: #D7000E;
-        color: #FCFCFC;
-    }
+.daily-reminder.error {
+    background-color: #D7000E;
+    color: #FCFCFC;
+}
 
 .daily-reminder.warning {
     background-color: #FFBF5E;
     color: #333;
 }
 
-    .daily-reminder.info {
-        background-color: #6600B3;
-        color: #FCFCFC;
-    }
+.daily-reminder.info {
+    background-color: #6600B3;
+    color: #FCFCFC;
+}
 
 .env-banner {
     font-weight: bold;
@@ -620,17 +637,364 @@ select:focus {
 }
 /* فونت و استایل RTL برای منو */
 .offcanvas {
-    font-family: 'IRANYekanXFaNum-Regular';
-    background-color: #00398d; /* پس‌زمینه تیره */
-    color: #fff;
-    width: 255px;
-    transition: transform 0.5s ease-in-out, visibility 0.5s ease-in-out;
+    --bs-offcanvas-width: 257px;
 }
+
     .offcanvas .nav-link:hover {
         background-color: rgba(255, 255, 255, 0.1);
         border-radius: 8px;
     }
-    /* حذف پرش‌های سریع هنگام مخفی‌سازی */
+
+    حذف پرش‌های سریع هنگام مخفی‌سازی
     .offcanvas.showing, .offcanvas.hiding {
         transition: transform 0.5s ease-in-out, visibility 0.5s ease-in-out;
     }
+
+/* ===================================================================================================== */
+/* فاصله بین متن و badge ها در نسخه موبایل کمتر باشه */
+@media (max-width: 767.98px) {
+    .footer .container {
+        gap: 0.5rem;
+    }
+
+    .footer {
+        padding-top: 0.25rem;
+        padding-bottom: 0.25rem;
+    }
+
+        .footer .badge {
+            font-size: 0.8rem;
+            padding: 0.3rem 0.6rem;
+        }
+}
+
+/* فاصله عمودی متعادل در دسکتاپ و موبایل */
+.footer {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+}
+
+    /* تنظیم badge ها برای کوچکتر و منظم بودن */
+    .footer .badge {
+        font-size: 0.85rem;
+        border-radius: 0.5rem;
+        white-space: nowrap;
+    }
+
+/* کارت‌ها فقط در موبایل */
+@media (max-width: 768px) {
+    #mobileSearchInput {
+        font-size: 14px;
+    }
+
+    .btn.btn-primary {
+        font-size: 14px;
+        white-space: nowrap;
+    }
+    /* ===================================================================================================== */
+    /* ======== LogController: استایل کارت مخصوص موبایل ======== */
+    .log-cards-container {
+        max-height: calc(85vh - 100px); /* ارتفاع وابسته به ارتفاع واقعی صفحه */
+        overflow-y: auto;
+        padding: 5px;
+        margin-bottom: 0; /* حذف فضای پایین */
+    }
+
+    .log-cards-scroll {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .log-card {
+        background: #fdfeff;
+        border: 1px solid #efefef;
+        border-radius: 12px;
+        padding: 2px 15px;
+        box-shadow: 0 4px 10px rgb(0 0 0 / 4%);
+        font-size: 15px;
+        direction: rtl;
+    }
+
+        .log-card:last-child {
+            margin-bottom: 0 !important;
+        }
+
+    .text-fixedCard {
+        display: flex;
+        flex-wrap: nowrap;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: stretch;
+        padding: 5px;
+    }
+
+    .log-card div {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .log-description {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        padding: 5px;
+        align-items: center;
+    }
+
+        .log-description button {
+            font-size: 14px;
+            vertical-align: middle;
+        }
+
+    .custom-modal-header {
+        background-color: #CFE2FF !important;
+        border-bottom: 1px solid #ddd;
+    }
+
+    /* برای اینکه دکمه close به متن نچسبد */
+    .modal-header .btn-close {
+        margin-right: auto;
+    }
+
+    .txtEN {
+        font-family: 'SFProAuto', IRANYekanXFaNum-Regular;
+        font-size: 14px;
+    }
+
+    .ip-box {
+        padding: 5px;
+        margin: 11px;
+    }
+
+    @media print {
+        /* مخفی کردن جدول در پرینت */
+        .d-none, .d-md-block {
+            display: none !important;
+        }
+
+        /* فقط کارت‌ها دیده بشن */
+        .d-block.d-md-none {
+            display: block !important;
+        }
+
+        /* تنظیمات چاپ کارت‌ها مرتب */
+        .log-cards-container {
+            max-height: none !important;
+            overflow: visible !important;
+        }
+
+        .log-cards-scroll {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .log-card {
+            border: 1px solid #ccc;
+            padding: 10px;
+            width: calc(50% - 10px); /* دو کارت در هر ردیف */
+            box-sizing: border-box;
+            page-break-inside: avoid;
+        }
+    }
+
+    .d-block-custome {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        align-content: center;
+        justify-content: space-between;
+    }
+    /* زیباتر کردن Dropdown */
+    .dropdown-menu {
+        text-align: right;
+    }
+
+    .dropdown-item {
+        font-size: 0.9rem;
+    }
+
+    .pagination-btn {
+        background: linear-gradient(90deg, #0d6efd 0%, #0a58ca 100%);
+        color: white;
+        border: none;
+        padding: 6px 14px;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        transition: all 0.3s ease;
+    }
+
+        .pagination-btn:hover {
+            background: linear-gradient(90deg, #0a58ca 0%, #084298 100%);
+            transform: translateY(-1px);
+        }
+
+    .log-card {
+        opacity: 0;
+        transform: translateY(10px);
+        transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+
+        .log-card.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    /* ======== LogController: استایل کارت مخصوص موبایل ======== */
+    /* ===================================================================================================== */
+    /* ======== ChecklistController: استایل کارت مخصوص موبایل ======== */
+    /* کارت دکمه‌ها در موبایل */
+    @media (max-width: 768px) {
+        html, body {
+            height: 100%;
+            overflow: hidden; /* کل بدنه اسکرول نداشته باشه */
+        }
+        #reportTable_filter,
+        #reportTable_length,
+        #reportTable_info,
+        #reportTable_paginate {
+            display: none !important;
+        }
+        .actions-buttons-mobile {
+            display: block !important;
+        }
+        .card-list .card {
+            background: #fdfeff;
+            border: 1px solid #efefef;
+            border-radius: 12px;
+            padding: 2px 4px;
+            box-shadow: 0 4px 10px rgb(0 0 0 / 4%);
+            font-size: 14px;
+            direction: rtl;
+        }
+
+        .Checklist-cards-container {
+            max-height: calc(83vh - 100px); /* ارتفاع وابسته به ارتفاع واقعی صفحه */
+            overflow-y: auto;
+            padding: 5px;
+            margin-bottom: 0; /* حذف فضای پایین */
+        }
+
+        .Checklist-cards-scroll {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .card-list .card-body {
+            padding: 1rem;
+        }
+
+        .card-list .card-title {
+            font-weight: 700;
+            font-size: 1rem;
+            color: #0d6efd;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-list .card-text {
+            font-size: 0.9rem;
+            margin-bottom: 0.4rem;
+            color: #333;
+        }
+
+        .card-list .card .btn {
+            font-size: 1.05rem;
+            padding: 0.35rem 0.75rem;
+        }
+
+        /* کارت دکمه‌ها در موبایل */
+        .card.d-block.d-md-none .card-body {
+            padding: 0.75rem 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: center;
+        }
+        /* دکمه‌ها در موبایل بعد از کارت‌ها نمایش داده می‌شوند */
+        .card-actions-mobile {
+            margin-top: 1.5rem;
+            display: none; /* پیش‌فرض مخفی */
+        }
+
+        .text-fixedCardChecklistMobile {
+            display: flex;
+            flex-wrap: nowrap;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: stretch;
+            padding: 0px;
+        }
+
+        .d-flex-btn {
+            display: flex !important;
+            flex-direction: row;
+            justify-content: center;
+            align-items: baseline;
+            flex-wrap: nowrap;
+        }
+        /* ======== ChecklistController: استایل دکمه های گزارشگیری در موبایل ======== */
+        .actions-buttons-fixed-mobile {
+            position: sticky;
+            bottom: 0;
+            background: rgba(255,255,255,0.95);
+            padding: 0.5rem 1rem;
+            box-shadow: 0 -2px 6px rgba(0,0,0,0.15);
+            z-index: 1050;
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 3rem !important;
+            margin-bottom: 3rem !important;
+        }
+
+            .actions-buttons-fixed-mobile button {
+                font-size: 0.9rem;
+                padding: 0.4rem 0.8rem;
+                border-radius: 0.5rem;
+                white-space: nowrap;
+            }
+    }
+    /* ===================================================================================================== */
+    /* ======== ArchiveIndex: استایل کارت  و اسکرول مخصوص موبایل ======== */
+    .ArchiveMobile-container {
+        max-height: calc(64vh - 100px);
+        overflow-y: auto;
+        padding: 5px;
+        margin-top: 12px;
+        margin-bottom: 0;
+
+        /* مخفی کردن اسکرول‌بار در همه مرورگرها */
+        -ms-overflow-style: none; /* IE و Edge */
+        scrollbar-width: none; /* Firefox */
+    }
+    .ArchiveMobile-cards-scroll::-webkit-scrollbar {
+        display: none; /* Chrome, Safari و سایر مرورگرهای مبتنی بر WebKit */
+    }
+
+    .ArchiveMobile-cards-scroll {
+        display: flex;
+        flex-direction: column;
+        overflow-y: hidden;
+        gap: 10px;
+    }
+
+    .cardArchiveMobile {
+        background: #fffefa;
+        border: 1px solid #efefef;
+        border-radius: 12px;
+        padding: 2px 15px;
+        box-shadow: 0 4px 10px rgb(0 0 0 / 4%);
+        font-size: 14px;
+        direction: rtl;
+        margin-bottom: 0.5rem;
+    }
+    .cardbox-shadow {
+        box-shadow: 0 15px 10px rgb(0 0 0 / 7%);
+    }
+}

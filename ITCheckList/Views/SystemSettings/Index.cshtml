@@ -4,14 +4,13 @@
 
 <h3 class="text-center fw-bold">تنظیمات سیستم</h3>
 <div class="text-center">
-    <button id="btnClearCache" class="btn btn-danger m-2">پاک‌سازی کش</button>
-    <button id="btnOptimizeDb" class="btn btn-dark m-2">بهینه‌سازی پایگاه داده</button>
+    <button id="btnClearCache" class="btn btn-outline-primary fw-bold text-primary-emphasis bg-primary-subtle border border-primary-subtle">پاک‌سازی کش</button>
+    <button id="btnOptimizeDb" class="btn btn-outline-primary fw-bold text-primary-emphasis bg-primary-subtle border border-primary-subtle">بهینه‌سازی پایگاه داده</button>
 </div>
 
 <div id="resultMessage" class="text-center mt-3 fw-bold"></div>
 
 @section ITCheckListSettingsScripts {
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         // دکمه پاک‌سازی کش
         document.getElementById("btnClearCache").addEventListener("click", function () {

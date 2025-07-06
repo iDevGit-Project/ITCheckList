@@ -5,9 +5,6 @@
     var items = ViewBag.Items as List<TBL_CheckItem>;
     bool hasUnarchivedOldData = ViewBag.HasUnarchivedOldData ?? false;
 }
-<!-- اضافه کردن Font Awesome از CDN -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
 <!--=================================================================-->
 @{
     var successMessage = TempData["SuccessMessage"] as string;
@@ -40,17 +37,16 @@
 }
 <!--=================================================================-->
 <div class="mt-5" id="reportSection">
-    <h4 class="text-center fw-bold">مدیریت چک لیست روزانه</h4>
     <!-- نوار ابزار بالا -->
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 my-3" dir="rtl">
-        <button id="btnAdd" type="button" class="btn custom-btn btn-outline-primary">
+        <button id="btnAdd" type="button" class="btn btn-outline-primary fw-bold text-primary-emphasis bg-primary-subtle border border-primary-subtle">
             افزودن موضوع جدید
         </button>
         <p class="mb-0">تاریخ امروز: <span class="fw-bold" id="shamsiDate"></span></p>
     </div>
 
     <!-- جدول اطلاعات -->
-    <table class="table table-bordered text-center align-middle responsive-table" id="reportTable" dir="rtl">
+    <table class="table table-bordered text-center align-middle responsive-table d-none d-md-table" id="reportTable" dir="rtl">
         <thead class="table-light">
             <tr>
                 <th class="text-center">ردیف</th>
@@ -87,7 +83,7 @@
 
                     <tr class="@rowClass">
                         <td>@(i++)</td>
-                        <td class="text-end">@item.Section</td>
+                        <td class="text-center">@item.Section</td>
                         <td class="text-end">@item.Description</td>
 
                         <!-- تبدیل به شمسی در کلاینت -->
@@ -135,9 +131,73 @@
                     </tr>
                 }
             }
+
         </tbody>
     </table>
-
+    <!--=================================================================-->
+    <div class="actions-buttons-desktop text-center d-none d-md-block my-3">
+        <button id="btnArchiveToday" class="btn btn-outline-primary fw-bold text-primary-emphasis bg-primary-subtle border border-primary-subtle">
+            ارسال گزارشات به بایگانی امروز
+        </button>
+        <button id="btnPrintTable" class="btn btn-outline-primary fw-bold text-primary-emphasis bg-primary-subtle border border-primary-subtle">
+            دریافت خروجی از اطلاعات
+        </button>
+    </div>
+    <!--=================================================================-->
+    <!-- کارت‌ها: فقط در موبایل -->
+    <div class="card-list d-block d-md-none" dir="rtl">
+        <div class="Checklist-cards-container">
+            <div class="Checklist-cards-scroll">
+                @if (items != null)
+                {
+                    int i = 1;
+                    foreach (var item in items)
+                    {
+                        <div class="card mb-2">
+                            <div class="card-body">
+                                <p class="text-fixedCardChecklistMobile"><strong>نام درخواست : </strong>@item.Section</p>
+                                <p class="text-fixedCardChecklistMobile"><strong>موضوع : </strong>@item.Description</p>
+                                <p class="text-fixedCardChecklistMobile"><strong>تاریخ : </strong>@item.CreatedAt.ToShamsi()</p>
+                                <p class="text-fixedCardChecklistMobile"><strong>توضیحات : </strong>@item.Note</p>
+                                <p class="text-fixedCardChecklistMobile"><strong>وضعیت : </strong>@(item.Status ? "انجام شد" : "در دست اقدام")</p>
+                                <div class="d-flex-btn gap-2">
+                                    @if (item.Status)
+                                    {
+                                        <span class="text-success fw-bold">موفق</span>
+                                    }
+                                    else if (!item.Status && !hasUnarchivedOldData)
+                                    {
+                                        <button class="btn btn-outline-success fw-bold text-success-emphasis bg-success-subtle border border-success-subtle btn-confirm-final" data-id="@item.Id">
+                                            ثبت نهایی
+                                        </button>
+                                        <a asp-controller="Checklist" asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-warning fw-bold text-warning-emphasis bg-warning-subtle border border-warning-subtle">
+                                            ویرایش
+                                        </a>
+                                        <button class="btn btn-outline-danger fw-bold text-danger-emphasis bg-danger-subtle border border-danger-subtle btn-delete" data-id="@item.Id">
+                                            حذف
+                                        </button>
+                                    }
+                                    else if (hasUnarchivedOldData)
+                                    {
+                                        <span class="text-muted">غیرفعال</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        i++;
+                    }
+                }
+            </div>
+        </div>
+    </div>
+    <div class="actions-buttons-mobile text-center d-block d-md-none my-3">
+        <button id="btnArchiveTodayMobile" class="btn btn-outline-primary fw-bold text-primary-emphasis bg-primary-subtle border border-primary-subtle">
+            ارسال گزارشات به بایگانی امروز
+        </button>
+        <button id="btnPrintTableMobile" class="btn btn-outline-primary fw-bold text-primary-emphasis bg-primary-subtle border border-primary-subtle">
+            دریافت خروجی از اطلاعات
+        </button>
+    </div>
     <!--=================================================================-->
     <!-- Overlay برای قفل کردن سیستم -->
     @if (hasUnarchivedOldData)
@@ -152,17 +212,9 @@
             </div>
         </div>
     }
-    <!--=================================================================-->
-    <!-- دکمه دریافت خروجی -->
-    <div class="text-start mt-3">
-        <!-- دکمه درج در بایگانی امروز -->
-        <button id="btnArchiveToday" class="btn custom-btn btn-outline-primary">ارسال گزارشات به بایگانی امروز</button>
-        <button id="btnPrintTable" class="btn custom-btn btn-outline-primary">دریافت خروجی از اطلاعات</button>
-    </div>
 </div>
 <!--=================================================================-->
 <!--نمایش مودال جهت ثبت اطلاعات-->
-<!-- Modal -->
 <div class="modal fade" id="modalForm" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-scrollable modal-lg" dir="rtl">
         <div class="modal-content">
@@ -176,20 +228,8 @@
         </div>
     </div>
 </div>
-
 <!--=================================================================-->
 @section ITCheckListPrint {
-    <!--فراخوانی فایل اسکریپت آنلاین -->
-    <script src="https://cdn.jsdelivr.net/npm/toastify-js" asp-append-version="true"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js" asp-append-version="true"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" asp-append-version="true"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/print-js/1.6.0/print.min.js" asp-append-version="true"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" asp-append-version="true"></script>
-    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-    <!--=================================================================-->
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
-    <!--=================================================================-->
     <!--فراخوانی اسکریپت خروجی گزارش از اطلاعات-->
     <script src="~/lib/exporttableprint.js" asp-append-version="true"></script>
     <script src="~/lib/data-loading.js" asp-append-version="true"></script>
@@ -429,7 +469,7 @@
         });
     </script>
     <!--=================================================================-->
-    <!--فراخوانی اسکریپت عدم نمایش چاپ-->
+    <!--فراخوانی اسکریپت عدم نمایش چاپ نسخه دسکتاپ-->
     <script>
         document.getElementById("btnPrintTable")?.addEventListener("click", function () {
             fetch('/Checklist/IsCheckItemTableEmpty')
@@ -460,9 +500,113 @@
         });
     </script>
     <!--=================================================================-->
-    <!--فراخوانی اسکریپت بایگانی داده های روز جاری-->
+    <!--فراخوانی اسکریپت بایگانی داده های روز جاری نسخه دسکتاپ-->
     <script>
         document.getElementById("btnArchiveToday")?.addEventListener("click", function () {
+            fetch('/Checklist/IsCheckItemTableEmpty')
+                .then(res => res.ok ? res.json() : Promise.reject('خطا در بررسی وضعیت جدول.'))
+                .then(data => {
+                    if (data.isEmpty) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'هشدار!',
+                            html: '<div style="direction: rtl;">هیچ گزارشی جهت ارسال به بایگانی امروز وجود ندارد.</div>',
+                            confirmButtonText: 'متوجه شدم',
+                            customClass: {
+                                confirmButton: 'btn btn-success',
+                            },
+                        });
+                    } else {
+                        fetch('/Checklist/HasPendingItems')
+                            .then(res => res.json())
+                            .then(pending => {
+                                if (pending.hasPending) {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: '!...هشدار',
+                                        html: `
+                                        <div class="custom-alert-content">
+                                        برخی موارد در وضعیت "در دست اقدام" یا "در دست بررسی" هستند. جهت ثبت، ابتدا همه را به وضعیت "انجام شد" تغییر دهید.
+                                        </div>`,
+                                            confirmButtonText: 'متوجه شدم',
+                                            customClass: {
+                                                popup: 'custom-swal-width',
+                                                confirmButton: 'btn custom-btn btn-outline-primary',
+                                            },
+                                    });
+                                } else {
+                                    Swal.fire({
+                                        title: 'پاک‌سازی پس از بایگانی؟',
+                                        html: '<div style="direction: rtl;">آیا پس از بایگانی، اطلاعات پاک شوند؟</div>',
+                                        icon: 'question',
+                                        showDenyButton: true,
+                                        showCancelButton: true,
+                                        confirmButtonText: 'بله، پاک شود',
+                                        denyButtonText: 'خیر، فقط بایگانی شود',
+                                        cancelButtonText: 'لغو عملیات',
+                                        customClass: {
+                                            popup: 'swal2-rtl',
+                                            confirmButton: 'btn custom-btn btn-outline-primary',
+                                            denyButton: 'btn custom-btn btn-outline-primary',
+                                            cancelButton: 'btn custom-btn btn-outline-primary'
+                                        },
+                                        buttonsStyling: false
+                                    }).then(result => {
+                                        if (result.isConfirmed) archiveToday(true);
+                                        else if (result.isDenied) archiveToday(false);
+                                    });
+                                }
+                            });
+                    }
+                })
+                .catch(err => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'خطا!',
+                        html: `<div style="direction: rtl;">${err}</div>`,
+                            confirmButtonText: 'متوجه شدم',
+                            customClass: {
+                                confirmButton: 'btn custom-btn btn-outline-primary',
+                            },
+                    });
+                });
+        });
+    </script>
+    <!--=================================================================-->
+    <!--فراخوانی اسکریپت عدم نمایش چاپ نسخه موبایل-->
+    <script>
+        document.getElementById("btnPrintTableMobile")?.addEventListener("click", function () {
+            fetch('/Checklist/IsCheckItemTableEmpty')
+                .then(res => res.ok ? res.json() : Promise.reject("خطا در دریافت وضعیت جدول"))
+                .then(data => {
+                    if (data.isEmpty) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: '...داده ای یافت نشد',
+                            html: '<div style="direction: rtl;">هیچ داده‌ای برای چاپ موجود نیست.</div>',
+                            confirmButtonText: 'متوجه شدم',
+                            customClass: {
+                                confirmButton: 'btn btn-success',
+                            },
+                        });
+                    } else {
+                        printFullTable();
+                    }
+                })
+                .catch(err => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'خطا!',
+                        html: `<div style="direction: rtl;">${err}</div>`,
+                        confirmButtonText: 'بازگشت'
+                    });
+                });
+        });
+    </script>
+    <!--=================================================================-->
+    <!--فراخوانی اسکریپت بایگانی داده های روز جاری نسخه موبایل-->
+    <script>
+        document.getElementById("btnArchiveTodayMobile")?.addEventListener("click", function () {
             fetch('/Checklist/IsCheckItemTableEmpty')
                 .then(res => res.ok ? res.json() : Promise.reject('خطا در بررسی وضعیت جدول.'))
                 .then(data => {
@@ -751,27 +895,6 @@
                 }
             });
         });
-        // $(document).on("click", ".btn-delete", function () {
-        //     const id = $(this).data("id");
-        //     Swal.fire({
-        //         title: "آیا از حذف اطلاعات مطمئن هستید؟",
-        //         text: ".بعد از حذف، اطلاعات قابل بازگشت نیست",
-        //         icon: "warning",
-        //         showCancelButton: true,
-        //         confirmButtonText: "بله، حذف کن",
-        //         cancelButtonText: "انصراف"
-        //     }).then((result) => {
-        //         if (result.isConfirmed) {
-        //             $.post("/Checklist/Delete/" + id, function (res) {
-        //                 if (res.success) {
-        //                     Swal.fire("حذف شد", res.message, "success").then(() => location.reload());
-        //                 } else {
-        //                     Swal.fire("خطا", res.message, "error");
-        //                 }
-        //             });
-        //         }
-        //     });
-        // });
     </script>
     <!--=================================================================-->
 }

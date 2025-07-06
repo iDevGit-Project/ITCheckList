@@ -3,15 +3,9 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - ITCheckList</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/ITCheckList.styles.css" asp-append-version="true" />
-    <!-- اضافه کردن استایل Toastr -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-    <link rel="preload" href="~/fonts/IRANYekanXFaNum-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
-
+    <title>@ViewData["Title"] - مدیریت تسک های روزانه</title>
+    <partial name="_SiteReferencesCSS" />
+    @RenderSection("styles", required: false)
 </head>
 <!--=================================================================-->
 <!-- متد اطلاع رسانی در خصوص اجرای پروژه در هاست واقعی یا لوکال -->
@@ -67,10 +61,10 @@
 <!--=================================================================-->
     <div class="daily-reminder-container" id="notification-container"></div>
     <header dir="rtl">
-        <nav class="navbar navbar-expand-sm navbar-light bg-light text-dark border-bottom box-shadow mb-3" dir="rtl">
+        <nav class="navbar bg-body-tertiary navbar-expand-sm navbar-light bg-light text-dark border-bottom box-shadow mb-3" dir="rtl">
             <div class="container d-flex flex-wrap justify-content-between align-items-center">
                 <!-- دکمه منوی سه‌خطی -->
-                <button class="btn btn-primary me-2 order-1 order-sm-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasMenu" aria-label="باز کردن منو">
+                <button class="text-emphasis-color bg-emphasis-subtle border border-emphasis-subtle order-1 order-sm-0 rounded-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-label="باز کردن منو">
                     <i class="bi bi-list" style="font-size: 1.2rem;"></i>
                 </button>
 
@@ -82,7 +76,7 @@
                     </a>
 
                     <!-- منوی افقی فقط برای دسکتاپ -->
-                    <ul class="navbar-nav flex-row d-none d-sm-flex ms-4">
+                    @* <ul class="navbar-nav flex-row d-none d-sm-flex ms-4">
                         <li class="nav-item me-3">
                             <a class="nav-link text-dark fw-bold nav-animated" asp-controller="Checklist" asp-action="Index">
                                 مدیریت اطلاعات
@@ -103,7 +97,7 @@
                                 تنظیمات سیستم
                             </a>
                         </li>
-                    </ul>
+                    </ul> *@
                 </div>
 
                 <!-- تاریخ -->
@@ -143,46 +137,58 @@
     </div>
     <!--=================================================================-->
     <!-- Offcanvas Menu -->
-    <div class="offcanvas offcanvas-end text-bg-dark" tabindex="-1" id="offcanvasMenu" aria-labelledby="offcanvasMenuLabel" dir="rtl">
-        <div class="offcanvas-header">
-            <h5 class="offcanvas-title" id="offcanvasMenuLabel">داشبرد کاربری</h5>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="بستن"></button>
+    <div class="offcanvas offcanvas-end" data-bs-backdrop="static" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
+        <div class="offcanvas-header" dir="rtl">
+            <h5 class="offcanvas-title" id="offcanvasNavbarLabel">منوی کاربری</h5>
+            <button type="button" class="btn-close btn-close-dark" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
         <div class="offcanvas-body">
-            <ul class="nav flex-column gap-3 text-end">
-                <li class="nav-item">
-                    <a class="nav-link text-white fw-bold" href="/Checklist/Index"><i class="bi bi-check2-square me-2"></i> مدیریت اطلاعات</a>
+            <ul class="navbar-nav sticky-top">
+                <li class="nav-item text-end">
+                    <a class="nav-link text-dark fw-bold" aria-current="page" href="/Checklist/Index">مدیریت اطلاعات</a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link text-white fw-bold" href="/Checklist/ArchiveIndex"><i class="bi bi-archive me-2"></i> آرشیو اطلاعات</a>
+                <li class="nav-item text-end">
+                    <a class="nav-link text-dark fw-bold" aria-current="page" href="/Checklist/ArchiveIndex">آرشیو اطلاعات</a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link text-white fw-bold" href="/Log/Index"><i class="bi bi-clipboard-data me-2"></i> لاگ‌ها</a>
+                <li class="nav-item text-end">
+                    <a class="nav-link text-dark fw-bold" aria-current="page" href="/Log/Index">لاگ‌های سیستم</a>
+                </li>
+                <li class="nav-item text-end">
+                    <a class="nav-link text-dark fw-bold" aria-current="page" href="/SystemSettings/Index">تنظیمات</a>
                 </li>
             </ul>
         </div>
     </div>
     <!--=================================================================-->
-    <footer class="border-top footer bg-light text-dark" dir="rtl">
-        <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
-            <div class="text-center text-md-start">
+    <!-- فوتر سفارشی نسخه دسکتاپ -->
+    <footer class="border-top footer bg-light text-dark d-none d-md-block py-2" dir="rtl">
+        <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-1">
+            <div class="text-center text-md-start small">
                 کلیه حقوق برای <span class="fw-bold">حامد شریعتی مهر</span> محفوظ است.
             </div>
             <div class="d-flex gap-2 flex-wrap justify-content-center">
-                <span id="env-status" class="badge w-bold p-2 @envClass">بستر پروژه: <span class="text-dark">@envMessage</span></span>
-                <span id="internet-status" class="badge bg-secondary">بررسی اتصال...</span>
+                <span id="env-status" class="badge fw-bold p-2 @envClass">
+                    بستر پروژه : <span class="text-dark">@envMessage</span>
+                </span>
+                <span id="internet-status-desktop" class="badge bg-secondary">بررسی اتصال</span>
             </div>
         </div>
     </footer>
     <!--=================================================================-->
-    <script src="~/lib/jquery/dist/jquery.min.js" asp-append-version="true"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js" asp-append-version="true"></script>
-    <!--=================================================================-->
-    <script src="~/lib/showdatetimefa.js" asp-append-version="true"></script>
-    <!--=================================================================-->
-    <!-- متد بررسی رشته اتصال به پایگاه داده-->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="~/js/connection-check.js" asp-append-version="true"></script>
+    <!-- فوتر سفارشی نسخه موبایل-->
+    <footer class="border-top footer bg-light text-dark d-block d-md-none py-2" dir="rtl">
+        <div class="container text-center">
+            <div class="d-flex flex-row gap-2 justify-content-center align-items-center flex-wrap">
+                <span id="env-status" class="badge fw-bold p-2 @envClass text-wrap" style="font-size: 0.85rem;">
+                    بستر پروژه : <span class="text-dark">@envMessage</span>
+                </span>
+                <span id="internet-status-mobile" class="badge bg-secondary text-wrap" style="font-size: 0.85rem;">
+                    بررسی اتصال
+                </span>
+            </div>
+        </div>
+    </footer>
+
     <!--=================================================================-->
     <!-- پیام های سفارشی در برنامه -->
     <script>
@@ -253,29 +259,33 @@
         }, 5000); // مخفی شدن بعد از 10 ثانیه
     </script>
     <!--=================================================================-->
+    <!-- اسکریپت بررسی وضعیت اینترنت آنلاین یا آفلاین برای هر دو حالت موبایل و دسکتاپ -->
     <script>
         function updateInternetStatus() {
-            const badge = document.getElementById('internet-status');
             const isOnline = navigator.onLine;
-            if (navigator.onLine) {
-                badge.textContent = 'ارتباط: آنلاین';
-                badge.className = 'badge fw-normal p-2 bg-success';
-            } else {
-                badge.textContent = 'ارتباط: آفلاین';
-                badge.className = 'badge fw-normal p-2 bg-danger';
-            }
-        }
+            const badges = [
+                document.getElementById('internet-status-desktop'),
+                document.getElementById('internet-status-mobile')
+            ];
 
+            badges.forEach(badge => {
+                if (badge) {
+                    if (isOnline) {
+                        badge.textContent = 'وضعیت : آنلاین';
+                        badge.className = 'badge p-2 d-inline-flex fw-semibold text-success-emphasis bg-success-subtle border border-success-subtle';
+                    } else {
+                        badge.textContent = 'وضعیت : آفلاین';
+                        badge.className = 'badge p-2 d-inline-flex fw-semibold text-danger-emphasis bg-danger-subtle border border-danger-subtle';
+                    }
+                }
+            });
+        }
         window.addEventListener('online', updateInternetStatus);
         window.addEventListener('offline', updateInternetStatus);
         document.addEventListener('DOMContentLoaded', updateInternetStatus);
     </script>
     <!--=================================================================-->
-    <!-- اضافه کردن جاوااسکریپت Toastr -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" asp-append-version="true"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js" asp-append-version="true"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    <script src="~/lib/data-loading.js" asp-append-version="true"></script>
+    <partial name="_SiteReferencesJS" />
     @await RenderSectionAsync("Scripts", required: false)
     @await RenderSectionAsync("ITCheckListIndex", false)
     @await RenderSectionAsync("ITCheckListPrint", false)
